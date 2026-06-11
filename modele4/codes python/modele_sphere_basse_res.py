@@ -1,24 +1,24 @@
-# modele_planisphere_basse_res.py
+# modele_sphere.py
 # ==============================================================================
-# MODÈLE 0-D DE TEMPÉRATURE DE SURFACE - SIMULATION GLOBALE
+# MODÈLE 0-D DE TEMPÉRATURE DE SURFACE - VISUALISATION SPHÈRE 3D
 #
 # DESCRIPTION :
-# Ce script exécute le modèle thermique sur une grille de points couvrant
-# l'ensemble du globe pour générer un planisphère de températures.
+# Ce script exécute le modèle thermique sur une grille globale et visualise
+# les résultats sur une sphère 3D interactive.
 #
-# POURQUOI LES FICHIERS NPY ?
-# - Chargement super rapide : .npy se charge ~70× plus vite que .csv
-# - Fichier plus compact : en général ~20–80 % plus petit que l’équivalent ASCII;
-# - Types & shape préservés : dtype et shape sauvegardés automatiquement, pas besoin de parser ni re‑spécifier;
-#
+# PS :
+# Il est très difficile de faire en sorte que les lignes des côtes ne soient
+# pas visibles à travers la sphère
+# 
 # ==============================================================================
 
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
-import pathlib
-from scipy.ndimage import gaussian_filter1d
+from matplotlib.colors import Normalize
+from matplotlib import cm
 from tqdm import tqdm
+import pathlib
 import os
 import sys
 
@@ -26,18 +26,18 @@ import sys
 import fonctions as f
 import lib
 
-# --- Dépendances optionnelles pour une meilleure visualisation ---
+# --- Dépendances optionnelles pour la visualisation ---
 try:
-    import cartopy.crs as ccrs
     import cartopy.feature as cfeature
+    from cartopy.io import shapereader
 
     USE_CARTOPY = True
-    print("Cartopy détecté. Le rendu de la carte sera amélioré.")
+    print("Cartopy détecté. Les lignes de côte seront affichées en 3D.")
 except ImportError:
     USE_CARTOPY = False
-    print("AVERTISSEMENT: Cartopy non trouvé. Utilisation du rendu Matplotlib standard.")
+    print("AVERTISSEMENT: Cartopy non trouvé. Les côtes ne seront pas affichées.")
 
-# --- Chemins des fichiers de résultats ---
+# --- Chemins des fichiers de résultats (identiques au planisphère) ---
 NPY_DIR = pathlib.Path("ressources/npy")
 STABILIZED_FILE = NPY_DIR / "grid_lowres_stabilized.npy"
 ONEYEAR_FILE = NPY_DIR / "grid_lowres_1yr.npy"
@@ -72,33 +72,13 @@ except (FileNotFoundError, RuntimeError) as e:
 # ────────────────────────────────────────────────
 # FONCTIONS DE SIMULATION
 # ────────────────────────────────────────────────
-def f_rhs(T, phinet, C, q_latent, p_cond):
-    """
-    Calcule la partie droite de l'équation différentielle (dT/dt).
-    CORRIGÉ : Le dénominateur est bien C (capacité thermique).
-    """
+def f_rhs(T, phinet, C, q_latent):
+    """Côté droit de l'équation différentielle (dT/dt)."""
     return (
         phinet
         - q_latent
         + lib.P_em_atm_thermal(lib.Tatm)
         - lib.P_em_surf_thermal(T)
-        + p_cond # Flux de chaleur issu de la conduction profonde du sol
-    ) / C
-
-
-# ────────────────────────────────────────────────
-# FONCTIONS DE SIMULATION (CORRIGÉES ET COUPLÉES)
-# ────────────────────────────────────────────────
-def f_rhs(T, phinet, C, q_latent, p_cond):
-    """
-    Calcule la partie droite de l'équation différentielle (dT/dt).
-    """
-    return (
-        phinet
-        - q_latent
-        + lib.P_em_atm_thermal(lib.Tatm)
-        - lib.P_em_surf_thermal(T)
-        + p_cond  # Flux de chaleur issu de la conduction profonde du sol
     ) / C
 
 
@@ -113,13 +93,11 @@ def integrate_point_temperature(
     T0=288.0,
 ):
     """Intègre la température pour UN SEUL point géographique."""
+    from scipy.ndimage import gaussian_filter1d
+
     N = int(days * 24 * 3600 / lib.dt)
     T = np.empty(N + 1)
     T[0] = T0
-
-    # --- INITIALISATION DE LA COLONNE DE SOL POUR CE PIXEL ---
-    # On initialise le sol à la température d'équilibre de départ T0
-    T_sol = f.initialiser_profil_sol(T_moy_annuelle=T0, N=13)
 
     sign_daynight = np.empty(N)
     for k in range(N):
@@ -148,16 +126,10 @@ def integrate_point_temperature(
             lat_rad, jour_sim, heure_solaire, albedo_sol, albedo_nuages
         )
 
-        # --- CALCUL DE LA CONDUCTION DU SOL POUR CE PAS DE TEMPS ---
-        # On calcule le flux conducteur p_cond échangé avec le sous-sol
-        T_sol, p_cond = f.calculer_conduction_sol(T[k], T_sol, lib.dt)
-
         X = T[k]
         for _ in range(8):
-            # CORRECTION : p_cond est maintenant correctement passé en 5e argument
-            F = X - T[k] - lib.dt * f_rhs(X, phi_n, C_const, q_latent_step, p_cond)
+            F = X - T[k] - lib.dt * f_rhs(X, phi_n, C_const, q_latent_step)
             dF = 1.0 - lib.dt * (-4.0 * lib.sigma * X**3 / C_const)
-            
             if abs(dF) < 1e-9:
                 break
             X -= F / dF
@@ -182,24 +154,23 @@ def run_full_simulation(days, stabilize=False):
     for i in tqdm(range(NLAT), desc="Progression (latitude)"):
         for j in range(NLON):
             lat, lon = LAT[i], LON[j]
-
             albedo_mensuel_loc = monthly_albedo_sol[:, i, j]
             alb_sol_daily = f.lisser_donnees_annuelles(
                 albedo_mensuel_loc, sigma=15.0
             )
-
             alb_nuages_m = CERES_CLIM_DATA.sel(
                 lat=lat, lon=lon, method="nearest"
             ).to_numpy()
             alb_nuages_daily = f.lisser_donnees_annuelles(
                 alb_nuages_m, sigma=15.0
             )
-
             lat_idx_rzsm = min(
-                np.abs(lat_bins_rzsm[:-1] - lat).argmin(), RZSM_GRID.shape[0] - 1
+                np.abs(lat_bins_rzsm[:-1] - lat).argmin(),
+                RZSM_GRID.shape[0] - 1,
             )
             lon_idx_rzsm = min(
-                np.abs(lon_bins_rzsm[:-1] - lon).argmin(), RZSM_GRID.shape[1] - 1
+                np.abs(lon_bins_rzsm[:-1] - lon).argmin(),
+                RZSM_GRID.shape[1] - 1,
             )
             rzsm_val = RZSM_GRID[lat_idx_rzsm, lon_idx_rzsm]
             cp_kj = (
@@ -208,16 +179,13 @@ def run_full_simulation(days, stabilize=False):
                 else f.CP_SEC
             )
             C_const = (cp_kj * 1000.0) * f.RHO_BULK * lib.EPAISSEUR_ACTIVE
-
             continent = f.continent_finder(lat, lon)
             q_base = lib.Q_LATENT_CONTINENT.get(
                 continent, lib.Q_LATENT_CONTINENT["Océan"]
             )
             if lat > 75:
                 q_base = 0.0
-
             T0 = 288.15 - 30 * np.sin(np.radians(lat)) ** 2
-
             T_series = integrate_point_temperature(
                 days,
                 np.radians(lat),
@@ -241,7 +209,7 @@ def run_full_simulation(days, stabilize=False):
 
 
 # ────────────────────────────────────────────────
-# EXÉCUTION PRINCIPALE ET VISUALISATION
+# EXÉCUTION PRINCIPALE ET VISUALISATION 3D
 # ────────────────────────────────────────────────
 if __name__ == "__main__":
     target_file = None
@@ -285,71 +253,88 @@ if __name__ == "__main__":
     SIM_DAYS_DISPLAY = T_grid_all_times.shape[0] // int(24 * 3600 / lib.dt)
 
     plt.close("all")
-    fig = plt.figure(figsize=(14, 8))
+    fig = plt.figure(figsize=(10, 9))
+    ax = fig.add_subplot(111, projection="3d")
 
-    if USE_CARTOPY:
-        # CORRIGÉ : Utilisation de PlateCarree pour une carte rectangulaire
-        proj = ccrs.PlateCarree()
-        ax = plt.axes(projection=proj)
-        transform = ccrs.PlateCarree()
-    else:
-        proj = None
-        ax = plt.axes()
-        transform = ax.transData
+    # Forcer un aspect parfaitement sphérique en fixant les limites des axes
+    ax.set_xlim([-1.1, 1.1])
+    ax.set_ylim([-1.1, 1.1])
+    ax.set_zlim([-1.1, 1.1])
+    ax.set_box_aspect([1, 1, 1])
 
-    initial_T_grid = T_grid_all_times[0, :, :]
-
-    im = ax.imshow(
-        initial_T_grid - 273.15,
-        origin="lower",
-        extent=[-180, 180, -90, 90],
-        transform=transform,
-        cmap="inferno",
-        vmin=-50,
-        vmax=50,
+    # Préparation des coordonnées pour la sphère
+    lon_sphere = np.append(LON, LON[0] + 360)
+    T_grid_sphere = np.concatenate(
+        (T_grid_all_times, T_grid_all_times[:, :, 0:1]), axis=2
     )
+    lon_rad = np.radians(lon_sphere)
+    lat_rad = np.radians(90 - LAT)
+    lon_mesh, lat_mesh = np.meshgrid(lon_rad, lat_rad)
+    R = 1.0
+    X = R * np.sin(lat_mesh) * np.cos(lon_mesh)
+    Y = R * np.sin(lat_mesh) * np.sin(lon_mesh)
+    Z = R * np.cos(lat_mesh)
 
+    # Configuration de la colormap
+    vmin, vmax = 220, 320
+    norm = Normalize(vmin=vmin, vmax=vmax)
+    cmap = cm.inferno
+
+    # Tracé initial de la surface
+    T_slice = T_grid_sphere[0, :, :]
+    face_colors = cmap(norm(T_slice))
+    surf = ax.plot_surface(
+        X, Y, Z, facecolors=face_colors, rstride=1, cstride=1,
+        antialiased=False, shade=False, edgecolor='none',
+        zorder=1
+    )
+    ax.set_axis_off()
+
+    # Ajout des lignes de côte
     if USE_CARTOPY:
-        ax.coastlines()
-        ax.gridlines(draw_labels=True, linestyle='--', alpha=0.5)
-    else:
-        ax.set_xlabel("Longitude")
-        ax.set_ylabel("Latitude")
-        ax.grid(True, linestyle='--', alpha=0.5)
+        # Augmenter significativement le rayon pour que les côtes soient bien visibles
+        R_coast = 1.08
+        coastline_feature = cfeature.COASTLINE
+        for geometry in coastline_feature.geometries():
+            for line in (geometry if hasattr(geometry, 'geoms') else [geometry]):
+                lons, lats = line.xy
+                lon_c_rad = np.radians(np.array(lons))
+                lat_c_rad = np.radians(90 - np.array(lats))
+                Xc = R_coast * np.sin(lat_c_rad) * np.cos(lon_c_rad)
+                Yc = R_coast * np.sin(lat_c_rad) * np.sin(lon_c_rad)
+                Zc = R_coast * np.cos(lat_c_rad)
+                ax.plot(Xc, Yc, Zc, color='black', linewidth=1.2, 
+                       zorder=10, alpha=0.9)
 
-    cb = fig.colorbar(im, ax=ax, orientation="vertical", fraction=0.03, pad=0.04)
-    cb.set_label("Température de surface (°C)", fontsize=12)
-
-    plt.subplots_adjust(bottom=0.25, top=0.95)
-    title = ax.set_title("Température de surface - Jour 0, Heure 0", fontsize=14)
-
+    # Ajout de la barre de couleur et des sliders
+    m = cm.ScalarMappable(cmap=cmap, norm=norm)
+    m.set_array([])
+    cb = fig.colorbar(m, ax=ax, shrink=0.5, aspect=10, pad=0.01)
+    cb.set_label("Température de surface (K)")
+    plt.subplots_adjust(bottom=0.2)
+    title = fig.suptitle("Jour 0, Heure 0", fontsize=14)
     ax_slider_day = plt.axes([0.2, 0.1, 0.6, 0.03])
-    slider_day = Slider(
-        ax_slider_day, "Jour", 0, SIM_DAYS_DISPLAY - 1, valinit=0, valstep=1
-    )
-
+    slider_day = Slider(ax_slider_day, "Jour", 0, SIM_DAYS_DISPLAY - 1, valinit=0, valstep=1)
     ax_slider_hour = plt.axes([0.2, 0.05, 0.6, 0.03])
-    slider_hour = Slider(
-        ax_slider_hour, "Heure", 0, 23, valinit=0, valstep=1
-    )
+    slider_hour = Slider(ax_slider_hour, "Heure", 0, 23, valinit=0, valstep=1)
 
     def _refresh(val):
         day = int(slider_day.val)
         hour = int(slider_hour.val)
-
         steps_per_day = int(24 * 3600 / lib.dt)
         steps_per_hour = int(3600 / lib.dt)
         time_idx = day * steps_per_day + hour * steps_per_hour
-        time_idx = min(time_idx, T_grid_all_times.shape[0] - 1)
-
-        T_slice = T_grid_all_times[time_idx, :, :]
-        im.set_data(T_slice - 273.15)
-        title.set_text(f"Température de surface - Jour {day}, Heure {hour}")
+        time_idx = min(time_idx, T_grid_sphere.shape[0] - 1)
+        T_slice = T_grid_sphere[time_idx, :, :]
+        new_colors_3d = cmap(norm(T_slice))
+        colors_for_faces = new_colors_3d[:-1, :-1, :]
+        surf.set_facecolors(colors_for_faces.reshape(-1, 4))
+        title.set_text(f"Jour {day}, Heure {hour}")
         fig.canvas.draw_idle()
 
     slider_day.on_changed(_refresh)
     slider_hour.on_changed(_refresh)
     _refresh(0)
 
-    print("\nFenêtre de visualisation ouverte. Utilisez les curseurs pour explorer.")
+    print("\nFenêtre de visualisation 3D ouverte. Tournez la sphère à la souris.")
     plt.show()

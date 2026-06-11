@@ -1,17 +1,20 @@
-# modele_planisphere_hires.py
+# modele_sphere_hires.py
 # ==============================================================================
-# MODÈLE 0-D DE TEMPÉRATURE DE SURFACE - PLANISPHÈRE HAUTE RÉSOLUTION
+# MODÈLE 0-D DE TEMPÉRATURE DE SURFACE - SPHÈRE 3D HAUTE RÉSOLUTION
 #
 # DESCRIPTION :
-# Ce script exécute le modèle thermique complet sur une grille globale HAUTE
-# RÉSOLUTION et visualise les résultats sur un planisphère interactif.
-# Il est entièrement externalisé et optimisé pour la performance.
+# Ce script exécute le modèle thermique sur une grille globale HAUTE RÉSOLUTION
+# et visualise les résultats sur une sphère 3D interactive.
+# Il combine la structure modulaire des scripts basse résolution avec une
+# optimisation par pré-calcul des paramètres pour gérer la haute résolution.
 #
 # ==============================================================================
 
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
+from matplotlib.colors import Normalize
+from matplotlib import cm
 from scipy.interpolate import RegularGridInterpolator
 from tqdm import tqdm
 import pathlib
@@ -24,13 +27,12 @@ import lib
 
 # --- Dépendances optionnelles ---
 try:
-    import cartopy.crs as ccrs
     import cartopy.feature as cfeature
     USE_CARTOPY = True
-    print("Cartopy détecté. Le rendu de la carte sera amélioré.")
+    print("Cartopy détecté. Les lignes de côte seront affichées en 3D.")
 except ImportError:
     USE_CARTOPY = False
-    print("AVERTISSEMENT: Cartopy non trouvé. Utilisation du rendu Matplotlib standard.")
+    print("AVERTISSEMENT: Cartopy non trouvé. Les côtes ne seront pas affichées.")
 
 # --- Chemins des fichiers de résultats HAUTE RÉSOLUTION ---
 NPY_DIR = pathlib.Path("ressources/npy")
@@ -83,6 +85,7 @@ RZSM_GRID_hi = upscale_grid(
 Q_GRID_HI = np.array([[lib.P_em_surf_evap(lat, lon, verbose=False) for lon in LON_HI] for lat in LAT_HI])
 C_GRID_HI = (f.compute_cp_from_rzsm(RZSM_GRID_hi) * 1000.0) * f.RHO_BULK * lib.EPAISSEUR_ACTIVE
 
+# Utilisation de la fonction corrigée lisser_donnees_annuelles
 albedo_sol_daily_grid = f.lisser_donnees_annuelles(monthly_albedo_hi, sigma=15.0)
 monthly_cloud_albedo_hi = ceres_clim_lowres.sel(
     lat=LAT_HI, lon=LON_HI, method="nearest"
@@ -93,55 +96,41 @@ print("--- Pré-calcul terminé ---")
 
 
 # ────────────────────────────────────────────────
-# FONCTIONS DE SIMULATION (MODIFIÉES ET COUPLÉES AVEC LE SOL 1D)
+# FONCTIONS DE SIMULATION (Code inchangé)
 # ────────────────────────────────────────────────
-def f_rhs(T, phinet, C, q_latent, p_cond):
-    """Côté droit de l'équation différentielle (dT/dt) incluant la conduction."""
+def f_rhs(T, phinet, C, q_latent):
     return (
         phinet
         - q_latent
         + lib.P_em_atm_thermal(lib.Tatm)
         - lib.P_em_surf_thermal(T)
-        + p_cond  # Flux de chaleur issu de la conduction profonde du sol
     ) / C
 
 def integrate_point_temperature(
     days, lat_rad, lon_deg, alb_sol_daily, alb_nuages_daily, C_const, q_base, T0
 ):
-    """Intègre la température pour UN SEUL point, en utilisant les profils pré-calculés."""
     from scipy.ndimage import gaussian_filter1d
-    N_steps = int(days * 24 * 3600 / lib.dt)
-    T = np.empty(N_steps + 1)
+    N = int(days * 24 * 3600 / lib.dt)
+    T = np.empty(N + 1)
     T[0] = T0
-    
-    # --- INITIALISATION DE LA COLONNE DE SOL DE CE PIXEL ---
-    # Le sol profond est initialisé uniformément à sa température d'équilibre locale T0 (en Kelvin)
-    T_sol = f.initialiser_profil_sol(T_moy_annuelle=T0, N=13)
-
-    sign_daynight = np.empty(N_steps)
-    for k in range(N_steps):
+    sign_daynight = np.empty(N)
+    for k in range(N):
         t_sec = k * lib.dt
         jour_sim = int(t_sec // 86400) + 1
         _, heure_solaire = f.get_time_variables(t_sec, lon_deg)
         sign_daynight[k] = 1.0 if f.cos_incidence(lat_rad, jour_sim, heure_solaire) > 0 else -1.0
     q_latent_smoothed = gaussian_filter1d(q_base * sign_daynight, sigma=3.0, mode="wrap")
 
-    for k in range(N_steps):
+    for k in range(N):
         day_of_year, heure_solaire = f.get_time_variables(k * lib.dt, lon_deg)
         jour_sim = int(k * lib.dt // 86400) + 1
         phi_n = lib.P_inc_solar(
             lat_rad, jour_sim, heure_solaire,
             alb_sol_daily[day_of_year], alb_nuages_daily[day_of_year]
         )
-        
-        # --- CALCUL DE LA CONDUCTION DU SOL DU PAS DE TEMPS ---
-        # On fait évoluer la colonne de sol d'un pas dt à partir de la température de surface actuelle T[k]
-        T_sol, p_cond = f.calculer_conduction_sol(T[k], T_sol, lib.dt)
-
         X = T[k]
         for _ in range(8):
-            # p_cond intervient directement dans l'évaluation de f_rhs
-            F = X - T[k] - lib.dt * f_rhs(X, phi_n, C_const, q_latent_smoothed[k], p_cond)
+            F = X - T[k] - lib.dt * f_rhs(X, phi_n, C_const, q_latent_smoothed[k])
             dF = 1.0 - lib.dt * (-4.0 * lib.sigma * X**3 / C_const)
             if abs(dF) < 1e-9: break
             X -= F / dF
@@ -150,7 +139,6 @@ def integrate_point_temperature(
     return T
 
 def run_full_hires_simulation(days, stabilize=False):
-    """Exécute la simulation pour toute la grille HAUTE RÉSOLUTION."""
     result_file = HIRES_STABILIZED_FILE if stabilize else HIRES_ONEYEAR_FILE
     NPY_DIR.mkdir(parents=True, exist_ok=True)
     sim_type = "stabilisée (2 ans)" if stabilize else "rapide (1 an)"
@@ -164,8 +152,6 @@ def run_full_hires_simulation(days, stabilize=False):
         for j in range(NLON_HI):
             lat, lon = LAT_HI[i], LON_HI[j]
             T0 = 288.15 - 30 * np.sin(np.radians(lat)) ** 2
-            
-            # Appel de la fonction d'intégration locale couplée
             T_series = integrate_point_temperature(
                 days, np.radians(lat), lon,
                 albedo_sol_daily_grid[:, i, j],
@@ -185,8 +171,9 @@ def run_full_hires_simulation(days, stabilize=False):
     np.save(result_file, T_grid)
     return T_grid
 
+
 # ────────────────────────────────────────────────
-# EXÉCUTION PRINCIPALE ET VISUALISATION 2D
+# EXÉCUTION PRINCIPALE ET VISUALISATION 3D
 # ────────────────────────────────────────────────
 if __name__ == "__main__":
     target_file = None
@@ -223,42 +210,53 @@ if __name__ == "__main__":
     else:
         T_grid_all_times = run_full_hires_simulation(sim_days, stabilize)
 
+    # --- Configuration de la visualisation 3D (identique, mais avec les données HI-RES) ---
     SIM_DAYS_DISPLAY = T_grid_all_times.shape[0] // int(24 * 3600 / lib.dt)
     plt.close("all")
-    fig = plt.figure(figsize=(14, 8))
+    fig = plt.figure(figsize=(10, 9))
+    ax = fig.add_subplot(111, projection="3d")
+    ax.set_xlim([-1, 1]); ax.set_ylim([-1, 1]); ax.set_zlim([-1, 1])
+    ax.set_box_aspect([1, 1, 1])
 
-    if USE_CARTOPY:
-        proj = ccrs.PlateCarree()
-        ax = plt.axes(projection=proj)
-        transform = ccrs.PlateCarree()
-    else:
-        proj = None
-        ax = plt.axes()
-        transform = ax.transData
+    lon_sphere_coords = np.append(LON_HI, LON_HI[0] + 360)
+    T_grid_sphere = np.concatenate((T_grid_all_times, T_grid_all_times[:, :, 0:1]), axis=2)
+    lon_rad = np.radians(lon_sphere_coords)
+    lat_rad = np.radians(90 - LAT_HI)
+    lon_mesh, lat_mesh = np.meshgrid(lon_rad, lat_rad)
+    R = 1.0
+    X = R * np.sin(lat_mesh) * np.cos(lon_mesh)
+    Y = R * np.sin(lat_mesh) * np.sin(lon_mesh)
+    Z = R * np.cos(lat_mesh)
 
-    initial_T_grid = T_grid_all_times[0, :, :]
-    im = ax.imshow(
-        initial_T_grid - 273.15,
-        origin="lower",
-        extent=[-180, 180, -90, 90],
-        transform=transform,
-        cmap="inferno",
-        vmin=-50, vmax=50,
-        interpolation='bilinear'  # Lissage pour un rendu plus doux
+    vmin, vmax = 220, 320
+    norm = Normalize(vmin=vmin, vmax=vmax)
+    cmap = cm.inferno
+    T_slice = T_grid_sphere[0, :, :]
+    face_colors = cmap(norm(T_slice))
+    surf = ax.plot_surface(
+        X, Y, Z, facecolors=face_colors, rstride=1, cstride=1,
+        antialiased=False, shade=False, edgecolor='none'
     )
+    ax.set_axis_off()
 
     if USE_CARTOPY:
-        ax.coastlines()
-        ax.gridlines(draw_labels=True, linestyle='--', alpha=0.5)
-    else:
-        ax.set_xlabel("Longitude"); ax.set_ylabel("Latitude")
-        ax.grid(True, linestyle='--', alpha=0.5)
+        R_coast = 1.01
+        coastline_feature = cfeature.COASTLINE
+        for geometry in coastline_feature.geometries():
+            for line in (geometry if hasattr(geometry, 'geoms') else [geometry]):
+                lons, lats = line.xy
+                lon_c_rad = np.radians(np.array(lons))
+                lat_c_rad = np.radians(90 - np.array(lats))
+                Xc = R_coast * np.sin(lat_c_rad) * np.cos(lon_c_rad)
+                Yc = R_coast * np.sin(lat_c_rad) * np.sin(lon_c_rad)
+                Zc = R_coast * np.cos(lat_c_rad)
+                ax.plot(Xc, Yc, Zc, color='black', linewidth=0.5)
 
-    cb = fig.colorbar(im, ax=ax, orientation="vertical", fraction=0.03, pad=0.04)
-    cb.set_label("Température de surface (°C)", fontsize=12)
-    plt.subplots_adjust(bottom=0.25, top=0.95)
-    title = ax.set_title("Température de surface - Jour 0, Heure 0", fontsize=14)
-
+    m = cm.ScalarMappable(cmap=cmap, norm=norm)
+    cb = fig.colorbar(m, ax=ax, shrink=0.5, aspect=10, pad=0.01)
+    cb.set_label("Température de surface (K)")
+    plt.subplots_adjust(bottom=0.2)
+    title = fig.suptitle("Jour 0, Heure 0", fontsize=14)
     ax_slider_day = plt.axes([0.2, 0.1, 0.6, 0.03])
     slider_day = Slider(ax_slider_day, "Jour", 0, SIM_DAYS_DISPLAY - 1, valinit=0, valstep=1)
     ax_slider_hour = plt.axes([0.2, 0.05, 0.6, 0.03])
@@ -269,15 +267,16 @@ if __name__ == "__main__":
         hour = int(slider_hour.val)
         steps_per_day = int(24 * 3600 / lib.dt)
         steps_per_hour = int(3600 / lib.dt)
-        time_idx = min(day * steps_per_day + hour * steps_per_hour, T_grid_all_times.shape[0] - 1)
-        T_slice = T_grid_all_times[time_idx, :, :]
-        im.set_data(T_slice - 273.15)
-        title.set_text(f"Température de surface - Jour {day}, Heure {hour}")
+        time_idx = min(day * steps_per_day + hour * steps_per_hour, T_grid_sphere.shape[0] - 1)
+        T_slice = T_grid_sphere[time_idx, :, :]
+        new_colors_3d = cmap(norm(T_slice))
+        colors_for_faces = new_colors_3d[:-1, :-1, :]
+        surf.set_facecolors(colors_for_faces.reshape(-1, 4))
+        title.set_text(f"Jour {day}, Heure {hour}")
         fig.canvas.draw_idle()
 
     slider_day.on_changed(_refresh)
     slider_hour.on_changed(_refresh)
     _refresh(0)
-
-    print("\nFenêtre de visualisation HAUTE RÉSOLUTION ouverte.")
+    print("\nFenêtre de visualisation 3D HAUTE RÉSOLUTION ouverte.")
     plt.show()
