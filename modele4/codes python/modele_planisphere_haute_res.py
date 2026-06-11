@@ -93,15 +93,16 @@ print("--- Pré-calcul terminé ---")
 
 
 # ────────────────────────────────────────────────
-# FONCTIONS DE SIMULATION
+# FONCTIONS DE SIMULATION (MODIFIÉES ET COUPLÉES AVEC LE SOL 1D)
 # ────────────────────────────────────────────────
-def f_rhs(T, phinet, C, q_latent):
-    """Côté droit de l'équation différentielle (dT/dt)."""
+def f_rhs(T, phinet, C, q_latent, p_cond):
+    """Côté droit de l'équation différentielle (dT/dt) incluant la conduction."""
     return (
         phinet
         - q_latent
         + lib.P_em_atm_thermal(lib.Tatm)
         - lib.P_em_surf_thermal(T)
+        + p_cond  # Flux de chaleur issu de la conduction profonde du sol
     ) / C
 
 def integrate_point_temperature(
@@ -109,27 +110,38 @@ def integrate_point_temperature(
 ):
     """Intègre la température pour UN SEUL point, en utilisant les profils pré-calculés."""
     from scipy.ndimage import gaussian_filter1d
-    N = int(days * 24 * 3600 / lib.dt)
-    T = np.empty(N + 1)
+    N_steps = int(days * 24 * 3600 / lib.dt)
+    T = np.empty(N_steps + 1)
     T[0] = T0
-    sign_daynight = np.empty(N)
-    for k in range(N):
+    
+    # --- INITIALISATION DE LA COLONNE DE SOL DE CE PIXEL ---
+    # Le sol profond est initialisé uniformément à sa température d'équilibre locale T0 (en Kelvin)
+    T_sol = f.initialiser_profil_sol(T_moy_annuelle=T0, N=13)
+
+    sign_daynight = np.empty(N_steps)
+    for k in range(N_steps):
         t_sec = k * lib.dt
         jour_sim = int(t_sec // 86400) + 1
         _, heure_solaire = f.get_time_variables(t_sec, lon_deg)
         sign_daynight[k] = 1.0 if f.cos_incidence(lat_rad, jour_sim, heure_solaire) > 0 else -1.0
-    q_latent_smoothed = gaussian_filter1d(q_base * sign_daynight, sigma=3.0, mode="wrap")
+    q_latent_smoothed =     gaussian_filter1d(q_base * sign_daynight, sigma=3.0, mode="wrap")
 
-    for k in range(N):
+    for k in range(N_steps):
         day_of_year, heure_solaire = f.get_time_variables(k * lib.dt, lon_deg)
         jour_sim = int(k * lib.dt // 86400) + 1
         phi_n = lib.P_inc_solar(
             lat_rad, jour_sim, heure_solaire,
             alb_sol_daily[day_of_year], alb_nuages_daily[day_of_year]
         )
+        
+        # --- CALCUL DE LA CONDUCTION DU SOL DU PAS DE TEMPS ---
+        # On fait évoluer la colonne de sol d'un pas dt à partir de la température de surface actuelle T[k]
+        T_sol, p_cond = f.calculer_conduction_sol(T[k], T_sol, lib.dt)
+
         X = T[k]
         for _ in range(8):
-            F = X - T[k] - lib.dt * f_rhs(X, phi_n, C_const, q_latent_smoothed[k])
+            # p_cond intervient directement dans l'évaluation de f_rhs
+            F = X - T[k] - lib.dt * f_rhs(X, phi_n, C_const, q_latent_smoothed[k], p_cond)
             dF = 1.0 - lib.dt * (-4.0 * lib.sigma * X**3 / C_const)
             if abs(dF) < 1e-9: break
             X -= F / dF
@@ -152,6 +164,8 @@ def run_full_hires_simulation(days, stabilize=False):
         for j in range(NLON_HI):
             lat, lon = LAT_HI[i], LON_HI[j]
             T0 = 288.15 - 30 * np.sin(np.radians(lat)) ** 2
+            
+            # Appel de la fonction d'intégration locale couplée
             T_series = integrate_point_temperature(
                 days, np.radians(lat), lon,
                 albedo_sol_daily_grid[:, i, j],
@@ -170,7 +184,6 @@ def run_full_hires_simulation(days, stabilize=False):
     print(f"Sauvegarde des résultats dans '{result_file}'...")
     np.save(result_file, T_grid)
     return T_grid
-
 
 # ────────────────────────────────────────────────
 # EXÉCUTION PRINCIPALE ET VISUALISATION 2D

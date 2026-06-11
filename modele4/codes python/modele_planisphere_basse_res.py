@@ -72,7 +72,7 @@ except (FileNotFoundError, RuntimeError) as e:
 # ────────────────────────────────────────────────
 # FONCTIONS DE SIMULATION
 # ────────────────────────────────────────────────
-def f_rhs(T, phinet, C, q_latent):
+def f_rhs(T, phinet, C, q_latent, p_cond):
     """
     Calcule la partie droite de l'équation différentielle (dT/dt).
     CORRIGÉ : Le dénominateur est bien C (capacité thermique).
@@ -82,6 +82,7 @@ def f_rhs(T, phinet, C, q_latent):
         - q_latent
         + lib.P_em_atm_thermal(lib.Tatm)
         - lib.P_em_surf_thermal(T)
+        + p_cond # Flux de chaleur issu de la conduction profonde du sol
     ) / C
 
 

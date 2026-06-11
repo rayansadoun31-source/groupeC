@@ -420,3 +420,58 @@ def create_continent_finder(shapefile_path: pathlib.Path):
 
 # Instance globale de la fonction de détection, créée une seule fois.
 continent_finder = create_continent_finder(SHAPEFILE_PATH)
+
+# ────────────────────────────────────────────────
+# MODÈLE DE CONDUCTION THERMIQUE DU SOL (1D)
+# ────────────────────────────────────────────────
+def initialiser_profil_sol(T_moy_annuelle, N=13):
+    """
+    Initialise la colonne de sol à la température d'équilibre locale.
+    """
+    return np.ones(N) * T_moy_annuelle
+
+def calculer_conduction_sol(T_surf, T_sol, dt_sim, k=0.75, D=5e-6, L=10.0):
+    """
+    Fait avancer la diffusion thermique d'un pas de temps dt_sim pour UNE colonne de sol.
+
+    IN:
+        T_surf (float) : Température de surface actuelle (en Kelvin).
+        T_sol (np.ndarray) : Tableau 1D des températures de la colonne de sol.
+        dt_sim (float) : Pas de temps de la simulation globale [s].
+        k (float) : Conductivité thermique [W/(m.K)].
+        D (float) : Diffusivité thermique [m²/s].
+        L (float) : Profondeur totale modélisée [m].
+
+    OUT:
+        tuple: (T_sol_nouveau, p_cond)
+               - T_sol_nouveau : le profil de sol mis à jour.
+               - p_cond : la puissance surfacique [W/m²] transférée (positive si le sol chauffe la surface).
+    """
+    N = len(T_sol)
+    dx = L / (N - 1)
+    T_lim = T_sol[0]  # Température de fond maintenue constante
+
+    # Sécurité numérique : Subdivision du temps pour respecter le critère de Fourier
+    dt_max = 0.49 * (dx**2) / D
+    sub_steps = int(np.ceil(dt_sim / dt_max))
+    dt_sous_pas = dt_sim / sub_steps
+
+    T = T_sol.copy()
+
+    for _ in range(sub_steps):
+        T_old = T.copy()
+        # Équation de la chaleur 1D discrétisée (différences finies explicites)
+        T[1:-1] = (
+            T_old[1:-1]
+            + D * dt_sous_pas * (T_old[2:] - 2*T_old[1:-1] + T_old[:-2]) / dx**2
+        )
+        
+        # Conditions aux limites (Fond et Surface)
+        T[0] = T_lim
+        T[-1] = T_surf
+
+    # Calcul du flux de chaleur à l'interface (Loi de Fourier)
+    # Positif si la chaleur monte du sol vers la surface
+    p_cond = -k * (T[-1] - T[-2]) / dx
+
+    return T, p_cond
