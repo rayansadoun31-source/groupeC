@@ -108,18 +108,14 @@ def get_gases_ppm(z_km):
         "Temperature (°C)": round(T_C, 2),
         
         # Résultats CO2
-        #"CO2 de mélange (Proportion)": co2_melange,
+        "CO2 de mélange (Proportion)": co2_melange,
         "CO2 Volumique Absolu (Quantité)": round(co2_volumique_absolu, 2),
         
         # Résultats CH4
-        #"CH4 de mélange (Proportion)": round(ch4_melange, 4),
+        "CH4 de mélange (Proportion)": round(ch4_melange, 4),
         "CH4 Volumique Absolu (Quantité)": round(ch4_volumique_absolu, 4),
         
         # Résultats H2O
-        #"H2O de mélange (Proportion)": round(h2o_melange, 2),
+        "H2O de mélange (Proportion)": round(h2o_melange, 2),
         "H2O Volumique Absolu (Quantité)": round(h2o_volumique_absolu, 2)
     }
-
-# --- Démo ---
-print("Au sol (0 km) :")
-print(get_gases_ppm(0))
