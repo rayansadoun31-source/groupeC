@@ -10,8 +10,7 @@ def calculer_densite_moleculaire_air(pression, temperature):
     Formule :
         n_air = P / (kB * T)
 
-    Résultat :
-        densité moléculaire de l'air en molécules/m^3
+    en nb de molécules d'air par m^3
     """
 
     kB = 1.380649e-23  # constante de Boltzmann, en J/K
@@ -24,9 +23,6 @@ def calculer_densite_moleculaire_air(pression, temperature):
 def convertir_ppm_en_fraction_molaire(valeur_ppm):
     """
     Convertit une valeur exprimée en ppm en fraction molaire.
-
-    Exemple :
-        415 ppm -> 415e-6
     """
 
     fraction_molaire = valeur_ppm * 1e-6
@@ -111,62 +107,82 @@ def calculer_emissivite_une_couche(
     pression,
     temperature,
     epaisseur_couche,
-    gaz_absorbants,
-    epaisseur_optique_nuages=0.0
+
+    CO2_ppm,
+    fraction_molaire_H2O,
+    CH4_ppm,
+
+    section_efficace_absorption_CO2,
+    section_efficace_absorption_H2O,
+    section_efficace_absorption_CH4
 ):
     """
-    Calcule l'émissivité totale d'une seule couche atmosphérique.
-
-    Le dictionnaire gaz_absorbants contient les gaz pris en compte.
-
-    Exemple :
-        gaz_absorbants = {
-            "CO2": {
-                "fraction_molaire": ...,
-                "section_efficace_absorption": ...
-            },
-            "H2O": {
-                "fraction_molaire": ...,
-                "section_efficace_absorption": ...
-            },
-            "CH4": {
-                "fraction_molaire": ...,
-                "section_efficace_absorption": ...
-            }
-        }
+    Calcule l'émissivité totale d'une seule couche atmosphérique en prenant en compte tous les gaz présents.
 
     Formule :
-        tau_total = tau_CO2 + tau_H2O + tau_CH4 + tau_nuages
-
-    puis :
         emissivite = 1 - exp(-tau_total)
+        tau_total = tau_CO2 + tau_H2O + tau_CH4
     """
 
-    epaisseurs_optiques_gaz = {}
+    # -------------------------------------------------------------------------
+    # Conversion des ppm en fractions molaires
+    # -------------------------------------------------------------------------
 
-    tau_total = 0.0
+    fraction_molaire_CO2 = convertir_ppm_en_fraction_molaire(CO2_ppm)
+    fraction_molaire_CH4 = convertir_ppm_en_fraction_molaire(CH4_ppm)
 
-    for nom_gaz, donnees_gaz in gaz_absorbants.items():
+    # Pour H2O, on donne directement la fraction molaire.
+    # Exemple : fraction_molaire_H2O = 0.01 signifie 1 % de vapeur d'eau.
 
-        fraction_molaire_gaz = donnees_gaz["fraction_molaire"]
-        section_efficace_absorption_gaz = donnees_gaz["section_efficace_absorption"]
+    # -------------------------------------------------------------------------
+    # Épaisseur optique du CO2
+    # -------------------------------------------------------------------------
 
-        tau_gaz = calculer_epaisseur_optique_gaz(
-            pression=pression,
-            temperature=temperature,
-            fraction_molaire_gaz=fraction_molaire_gaz,
-            epaisseur_couche=epaisseur_couche,
-            section_efficace_absorption_gaz=section_efficace_absorption_gaz
-        )
+    tau_CO2 = calculer_epaisseur_optique_gaz(
+        pression=pression,
+        temperature=temperature,
+        fraction_molaire_gaz=fraction_molaire_CO2,
+        epaisseur_couche=epaisseur_couche,
+        section_efficace_absorption_gaz=section_efficace_absorption_CO2
+    )
 
-        epaisseurs_optiques_gaz[nom_gaz] = tau_gaz
-        tau_total += tau_gaz
+    # -------------------------------------------------------------------------
+    # Épaisseur optique de la vapeur d'eau H2O
+    # -------------------------------------------------------------------------
 
-    tau_total += epaisseur_optique_nuages
+    tau_H2O = calculer_epaisseur_optique_gaz(
+        pression=pression,
+        temperature=temperature,
+        fraction_molaire_gaz=fraction_molaire_H2O,
+        epaisseur_couche=epaisseur_couche,
+        section_efficace_absorption_gaz=section_efficace_absorption_H2O
+    )
+
+    # -------------------------------------------------------------------------
+    # Épaisseur optique du méthane CH4
+    # -------------------------------------------------------------------------
+
+    tau_CH4 = calculer_epaisseur_optique_gaz(
+        pression=pression,
+        temperature=temperature,
+        fraction_molaire_gaz=fraction_molaire_CH4,
+        epaisseur_couche=epaisseur_couche,
+        section_efficace_absorption_gaz=section_efficace_absorption_CH4
+    )
+
+    # -------------------------------------------------------------------------
+    # Épaisseur optique totale
+    # -------------------------------------------------------------------------
+
+    tau_total = (
+        tau_CO2
+        + tau_H2O
+        + tau_CH4
+    )
 
     emissivite = calculer_emissivite(tau_total)
 
-    return emissivite, tau_total, epaisseurs_optiques_gaz
+    return emissivite, tau_total, tau_CO2, tau_H2O, tau_CH4
 
 
 # =============================================================================
@@ -208,34 +224,21 @@ if __name__ == "__main__":
     section_efficace_absorption_CH4 = 1e-25
 
     # -------------------------------------------------------------------------
-    # Dictionnaire des gaz absorbants
-    # -------------------------------------------------------------------------
-
-    gaz_absorbants = {
-        "CO2": {
-            "fraction_molaire": fraction_molaire_CO2,
-            "section_efficace_absorption": section_efficace_absorption_CO2
-        },
-        "H2O": {
-            "fraction_molaire": fraction_molaire_H2O,
-            "section_efficace_absorption": section_efficace_absorption_H2O
-        },
-        "CH4": {
-            "fraction_molaire": fraction_molaire_CH4,
-            "section_efficace_absorption": section_efficace_absorption_CH4
-        }
-    }
-
-    # -------------------------------------------------------------------------
     # Calcul de l'émissivité
     # -------------------------------------------------------------------------
 
-    emissivite, tau_total, epaisseurs_optiques_gaz = calculer_emissivite_une_couche(
+    emissivite, tau_total, tau_CO2, tau_H2O, tau_CH4 = calculer_emissivite_une_couche(
         pression=pression,
         temperature=temperature,
         epaisseur_couche=epaisseur_couche,
-        gaz_absorbants=gaz_absorbants,
-        epaisseur_optique_nuages=0.0
+
+        CO2_ppm=CO2_ppm,
+        fraction_molaire_H2O=fraction_molaire_H2O,
+        CH4_ppm=CH4_ppm,
+
+        section_efficace_absorption_CO2=section_efficace_absorption_CO2,
+        section_efficace_absorption_H2O=section_efficace_absorption_H2O,
+        section_efficace_absorption_CH4=section_efficace_absorption_CH4,
     )
 
     # -------------------------------------------------------------------------
@@ -255,10 +258,10 @@ if __name__ == "__main__":
     print()
 
     print("Épaisseurs optiques :")
-    for nom_gaz, tau_gaz in epaisseurs_optiques_gaz.items():
-        print(f"tau_{nom_gaz} = {tau_gaz:.6e}")
-
-    print(f"tau_total = {tau_total:.6e}")
+    print(f"tau_CO2    = {tau_CO2:.6e}")
+    print(f"tau_H2O    = {tau_H2O:.6e}")
+    print(f"tau_CH4    = {tau_CH4:.6e}")
+    print(f"tau_total  = {tau_total:.6e}")
     print()
 
     print(f"Émissivité de la couche = {emissivite:.6f}")
