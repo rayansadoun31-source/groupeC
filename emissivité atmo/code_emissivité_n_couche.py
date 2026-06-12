@@ -5,6 +5,19 @@ import numpy as np
 # Formulation : tau = sigma * n * dz
 # =============================================================================
 
+# =============================================================================
+# CONSTANTES GLOBALES
+# =============================================================================
+
+CO2_ppm = 415.0
+CH4_ppm = 1.9
+fraction_molaire_H2O = 0.01
+
+section_efficace_absorption_CO2 = 1e-25
+section_efficace_absorption_H2O = 1e-25
+section_efficace_absorption_CH4 = 1e-25
+
+
 def calculer_densite_moleculaire_air(pression, temperature):
     """
     Formule :
@@ -106,15 +119,7 @@ def calculer_emissivite(epaisseur_optique):
 def calculer_emissivite_une_couche(
     pression,
     temperature,
-    epaisseur_couche,
-
-    CO2_ppm,
-    fraction_molaire_H2O,
-    CH4_ppm,
-
-    section_efficace_absorption_CO2,
-    section_efficace_absorption_H2O,
-    section_efficace_absorption_CH4
+    epaisseur_couche
 ):
     """
     Calcule l'émissivité totale d'une seule couche atmosphérique en prenant en compte tous les gaz présents.
@@ -180,22 +185,8 @@ if __name__ == "__main__":
     # Fractions molaires des gaz
     # -------------------------------------------------------------------------
 
-    CO2_ppm = 415.0
-    CH4_ppm = 1.9
-
     fraction_molaire_CO2 = convertir_ppm_en_fraction_molaire(CO2_ppm)
     fraction_molaire_CH4 = convertir_ppm_en_fraction_molaire(CH4_ppm)
-    fraction_molaire_H2O = 0.01
-
-    # -------------------------------------------------------------------------
-    # Sections efficaces d'absorption
-    # À choisir ou calibrer selon le modèle
-    # Unité : m^2/molécule
-    # -------------------------------------------------------------------------
-
-    section_efficace_absorption_CO2 = 1e-25
-    section_efficace_absorption_H2O = 1e-25
-    section_efficace_absorption_CH4 = 1e-25
 
     # -------------------------------------------------------------------------
     # Calcul de l'émissivité
@@ -204,15 +195,7 @@ if __name__ == "__main__":
     emissivite, tau_total, tau_CO2, tau_H2O, tau_CH4 = calculer_emissivite_une_couche(
         pression=pression,
         temperature=temperature,
-        epaisseur_couche=epaisseur_couche,
-
-        CO2_ppm=CO2_ppm,
-        fraction_molaire_H2O=fraction_molaire_H2O,
-        CH4_ppm=CH4_ppm,
-
-        section_efficace_absorption_CO2=section_efficace_absorption_CO2,
-        section_efficace_absorption_H2O=section_efficace_absorption_H2O,
-        section_efficace_absorption_CH4=section_efficace_absorption_CH4,
+        epaisseur_couche=epaisseur_couche
     )
 
     # -------------------------------------------------------------------------
