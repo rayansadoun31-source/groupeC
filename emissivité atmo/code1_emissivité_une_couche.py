@@ -121,7 +121,7 @@ if __name__ == "__main__":
     pression = 101325.0          # Pa
     temperature = 288.0          # KÚ
     concentration_CO2_ppm = 415.0
-    epaisseur_couche = 1000.0    # m
+    epaisseur_couche = 100.0    # m
 
     # Coefficient effectif à choisir/calibrer
     # Unité : m^2 par molécule

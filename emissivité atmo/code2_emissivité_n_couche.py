@@ -174,7 +174,7 @@ if __name__ == "__main__":
 
     pression = 101325.0          # Pa
     temperature = 288.0          # K
-    epaisseur_couche = 1000.0    # m
+    epaisseur_couche = 100.0    # m
 
     # -------------------------------------------------------------------------
     # Fractions molaires des gaz
