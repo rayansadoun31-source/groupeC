@@ -86,14 +86,13 @@ def calculer_emissivite_une_couche(
     temperature,
     concentration_CO2_ppm,
     epaisseur_couche,
-    section_efficace_absorption_CO2,
-    epaisseur_optique_nuages=0.0
+    section_efficace_absorption_CO2
 ):
     """
-    Calcule l'émissivité totale d'une seule couche atmosphérique en prenant en compte l'épaisseur d'optique des nuages.
+    Calcule l'émissivité totale d'une seule couche atmosphérique en prenant en compte plus tard les autres gaz présents.
     d'où : 
     
-        tau_total = tau_CO2 + tau_nuages
+        tau_total = tau_CO2 (+ plus tard : H20 et CH4)
         emissivite = 1 - exp(-tau_total)
     """
 
@@ -105,7 +104,7 @@ def calculer_emissivite_une_couche(
         section_efficace_absorption_CO2=section_efficace_absorption_CO2
     )
 
-    tau_total = tau_CO2 + epaisseur_optique_nuages
+    tau_total = tau_CO2
 
     emissivite = calculer_emissivite(tau_total)
 
@@ -120,7 +119,7 @@ if __name__ == "__main__":
 
     # Paramètres de la couche
     pression = 101325.0          # Pa
-    temperature = 288.0          # K
+    temperature = 288.0          # KÚ
     concentration_CO2_ppm = 415.0
     epaisseur_couche = 1000.0    # m
 
