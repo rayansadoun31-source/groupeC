@@ -1,0 +1,72 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, calc}
+
+\geometry{hmargin=2.5cm,vmargin=2.5cm}
+
+\title{Documentation Technique : Modèle Radiatif à 1 Couche}
+\author{Groupe : [Animal] [Épithète]}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Ce document fournit l'explication physique et mathématique du script Python modélisant l'équilibre radiatif de la Terre dotée d'une unique couche atmosphérique. Il détaille les constantes employées, la mise en équation des bilans de flux, et la logique de la résolution numérique via la fonction \texttt{fsolve} de SciPy.
+\end{abstract}
+
+\vspace{0.5cm}
+\hrule
+\vspace{0.5cm}
+
+
+\section{Paramètres et Constantes Physiques}
+Le modèle repose sur des constantes thermodynamiques et astronomiques fondamentales, rigoureusement sourcées pour garantir la validité des résultats :
+
+\begin{itemize}
+    \item \textbf{Constante Solaire ($S_0$)} : Puissance du rayonnement solaire par mètre carré au sommet de l'atmosphère terrestre. Le code utilise $1361.0 \, \text{W/m}^2$, valeur issue des mesures satellitaires récentes validées par le rapport AR6 du GIEC.
+    \item \textbf{Albédo ($\alpha$)} : Fraction de l'énergie solaire directement réfléchie vers l'espace par la surface, les nuages et l'atmosphère. Fixé à $0.3$.
+    \item \textbf{Constante de Stefan-Boltzmann ($\sigma$)} : Constante de proportionnalité de la loi du corps noir, valant $5.67 \times 10^{-8} \, \text{W/m}^2/\text{K}^4$ (référence CODATA 2018).
+    \item \textbf{Émissivité ($\epsilon$)} : Opacité de la couche atmosphérique aux rayonnements infrarouges (telluriques). Dans ce modèle simplifé, une valeur de $0.78$ est choisie empiriquement car elle permet de restituer la température de surface actuelle observée ($\approx 15\text{°C}$).
+\end{itemize}
+
+\section{Mise en Équation du Bilan Radiatif}
+L'algorithme cherche à déterminer un état d'équilibre thermodynamique. À l'équilibre, le flux d'énergie net (Entrant - Sortant) de chaque composant du système doit être strictement nul. Le système compte deux inconnues : la température de surface ($T_0$) et la température de la couche atmosphérique ($T_1$).
+
+\subsection{Énergie Solaire Absorbée}
+La Terre intercepte le rayonnement solaire sur la surface d'un disque plan ($\pi R^2$), mais cette énergie est répartie sur l'ensemble de sa surface sphérique ($4 \pi R^2$). Le flux solaire moyen entrant est donc divisé par 4. En tenant compte de la réflexion, le flux effectivement absorbé par la surface est :
+\begin{equation}
+    F_{solaire} = \frac{S_0}{4} \cdot (1 - \alpha)
+\end{equation}
+
+\subsection{Équation 1 : Bilan de la surface terrestre}
+La surface terrestre reçoit l'énergie du Soleil et le rayonnement infrarouge émis par l'atmosphère vers le bas. Elle perd de l'énergie en émettant son propre rayonnement infrarouge vers le haut (considérée ici comme un corps noir parfait, $\epsilon_{surf} = 1$). L'erreur de flux pour la surface s'écrit :
+\begin{equation}
+    \text{Bilan}_{surface} = F_{solaire} + \epsilon \cdot \sigma \cdot T_1^4 - \sigma \cdot T_0^4
+\end{equation}
+
+\subsection{Équation 2 : Bilan de la couche atmosphérique}
+La couche atmosphérique est supposée transparente au rayonnement solaire (longueurs d'onde courtes), mais absorbe une fraction $\epsilon$ du rayonnement infrarouge émis par la surface. En contrepartie, elle émet un rayonnement thermique. \textbf{Attention :} l'atmosphère émet ce rayonnement de manière isotrope, c'est-à-dire à la fois vers l'espace (vers le haut) et vers la surface (vers le bas), ce qui explique la présence du facteur 2 dans le terme de perte. L'erreur de flux s'écrit :
+\begin{equation}
+    \text{Bilan}_{atmosphere} = \epsilon \cdot \sigma \cdot T_0^4 - 2 \cdot \epsilon \cdot \sigma \cdot T_1^4
+\end{equation}
+
+\section{Résolution Numérique avec Python}
+Les équations précédentes forment un système non linéaire couplé (présence de puissances 4). Le code Python n'isole pas mathématiquement $T_0$ et $T_1$, mais utilise une approche numérique de recherche de racines.
+
+\subsection{La fonction de flux (Bilan\_radiatif\_1\_couche)}
+Cette fonction prend en argument un vecteur de températures $\vec{T} = [T_0, T_1]$ et retourne un vecteur contenant les deux bilans évalués. Si $\vec{T}$ correspond à l'équilibre parfait, la fonction retourne le vecteur nul $[0, 0]$.
+
+\subsection{L'algorithme de résolution (\texttt{fsolve})}
+La fonction \texttt{fsolve} (issue du module \texttt{scipy.optimize}) emploie un algorithme itératif pour trouver les valeurs de $T_0$ et $T_1$ qui annulent simultanément les deux équations. 
+Afin de garantir la convergence rapide de l'algorithme vers une solution physiquement réaliste (et d'éviter de potentielles racines complexes ou négatives), il est impératif de fournir des conditions initiales cohérentes (\texttt{T\_guess}). Ici, nous initions la recherche à $288.15 \, \text{K}$ (15\text{°C}) pour la surface et $250.0 \, \text{K}$ (-23\text{°C}) pour l'atmosphère. 
+
+\end{document}
