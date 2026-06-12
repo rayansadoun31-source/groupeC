@@ -217,3 +217,4 @@ if __name__ == "__main__":
     print()
 
     print(f"Émissivité de la couche = {emissivite:.6f}")
+    
