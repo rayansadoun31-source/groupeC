@@ -124,19 +124,8 @@ def calculer_emissivite_une_couche(
         tau_total = tau_CO2 + tau_H2O + tau_CH4
     """
 
-    # -------------------------------------------------------------------------
-    # Conversion des ppm en fractions molaires
-    # -------------------------------------------------------------------------
-
     fraction_molaire_CO2 = convertir_ppm_en_fraction_molaire(CO2_ppm)
     fraction_molaire_CH4 = convertir_ppm_en_fraction_molaire(CH4_ppm)
-
-    # Pour H2O, on donne directement la fraction molaire.
-    # Exemple : fraction_molaire_H2O = 0.01 signifie 1 % de vapeur d'eau.
-
-    # -------------------------------------------------------------------------
-    # Épaisseur optique du CO2
-    # -------------------------------------------------------------------------
 
     tau_CO2 = calculer_epaisseur_optique_gaz(
         pression=pression,
@@ -146,10 +135,6 @@ def calculer_emissivite_une_couche(
         section_efficace_absorption_gaz=section_efficace_absorption_CO2
     )
 
-    # -------------------------------------------------------------------------
-    # Épaisseur optique de la vapeur d'eau H2O
-    # -------------------------------------------------------------------------
-
     tau_H2O = calculer_epaisseur_optique_gaz(
         pression=pression,
         temperature=temperature,
@@ -158,10 +143,6 @@ def calculer_emissivite_une_couche(
         section_efficace_absorption_gaz=section_efficace_absorption_H2O
     )
 
-    # -------------------------------------------------------------------------
-    # Épaisseur optique du méthane CH4
-    # -------------------------------------------------------------------------
-
     tau_CH4 = calculer_epaisseur_optique_gaz(
         pression=pression,
         temperature=temperature,
@@ -169,10 +150,6 @@ def calculer_emissivite_une_couche(
         epaisseur_couche=epaisseur_couche,
         section_efficace_absorption_gaz=section_efficace_absorption_CH4
     )
-
-    # -------------------------------------------------------------------------
-    # Épaisseur optique totale
-    # -------------------------------------------------------------------------
 
     tau_total = (
         tau_CO2
@@ -208,9 +185,6 @@ if __name__ == "__main__":
 
     fraction_molaire_CO2 = convertir_ppm_en_fraction_molaire(CO2_ppm)
     fraction_molaire_CH4 = convertir_ppm_en_fraction_molaire(CH4_ppm)
-
-    # Pour la vapeur d'eau, on donne directement une fraction molaire.
-    # Exemple : 0.01 = 1 % de vapeur d'eau.
     fraction_molaire_H2O = 0.01
 
     # -------------------------------------------------------------------------
