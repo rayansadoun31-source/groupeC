@@ -1,19 +1,10 @@
 import numpy as np
 
-from code_H20_CH4_CO2_corrige import get_gases_ppm
+from code_H20_CH4_CO2 import get_gases_ppm
 
 # =============================================================================
-# ÉMISSIVITÉ D'UNE SEULE COUCHE ATMOSPHÉRIQUE
-# Formulation : tau = sigma * n * dz
+# CONSTANTES ADMISES
 # =============================================================================
-
-# =============================================================================
-# CONSTANTES GLOBALES
-# =============================================================================
-
-# Les concentrations de CO2, CH4 et H2O ne sont plus fixées ici.
-# Elles sont maintenant calculées par le code du groupe concentrations,
-# puis récupérées dans calculer_emissivite_une_couche().
 
 section_efficace_absorption_CO2 = 1e-25
 section_efficace_absorption_H2O = 1e-25
@@ -118,34 +109,6 @@ def calculer_emissivite(epaisseur_optique):
     return emissivite
 
 
-def calculer_fractions_molaires_depuis_concentrations(altitude_couche_km):
-    """
-    Récupère les concentrations calculées par le groupe concentrations
-    et les convertit en fractions molaires utilisables par le code d'émissivité.
-
-    Attention : on utilise les valeurs "de mélange" en ppm.
-    Les valeurs "volumiques absolues" ne doivent pas être utilisées ici,
-    car la densité de l'air est déjà calculée avec P/(kB*T).
-    """
-
-    concentrations = get_gases_ppm(altitude_couche_km)
-
-    CO2_ppm = concentrations["CO2 de mélange (Proportion)"]
-    CH4_ppm = concentrations["CH4 de mélange (Proportion)"]
-    H2O_ppm = concentrations["H2O de mélange (Proportion)"]
-
-    fraction_molaire_CO2 = convertir_ppm_en_fraction_molaire(CO2_ppm)
-    fraction_molaire_CH4 = convertir_ppm_en_fraction_molaire(CH4_ppm)
-    fraction_molaire_H2O = convertir_ppm_en_fraction_molaire(H2O_ppm)
-
-    return (
-        fraction_molaire_CO2,
-        fraction_molaire_H2O,
-        fraction_molaire_CH4,
-        concentrations
-    )
-
-
 def calculer_emissivite_une_couche(
     pression,
     temperature,
@@ -160,14 +123,15 @@ def calculer_emissivite_une_couche(
         tau_total = tau_CO2 + tau_H2O + tau_CH4
     """
 
-    (
-        fraction_molaire_CO2,
-        fraction_molaire_H2O,
-        fraction_molaire_CH4,
-        concentrations
-    ) = calculer_fractions_molaires_depuis_concentrations(
-        altitude_couche_km=altitude_couche_km
-    )
+    concentrations = get_gases_ppm(altitude_couche_km)
+
+    CO2_ppm = concentrations["CO2 de mélange (Proportion)"]
+    H2O_ppm = concentrations["H2O de mélange (Proportion)"]
+    CH4_ppm = concentrations["CH4 de mélange (Proportion)"]
+
+    fraction_molaire_CO2 = convertir_ppm_en_fraction_molaire(CO2_ppm)
+    fraction_molaire_H2O = convertir_ppm_en_fraction_molaire(H2O_ppm)
+    fraction_molaire_CH4 = convertir_ppm_en_fraction_molaire(CH4_ppm)
 
     tau_CO2 = calculer_epaisseur_optique_gaz(
         pression=pression,
@@ -216,7 +180,7 @@ if __name__ == "__main__":
 
     pression = 101325.0          # Pa
     temperature = 288.0          # K
-    epaisseur_couche = 1000.0    # m
+    epaisseur_couche = 100.0    # m
     altitude_couche_km = 0.0     # km
 
     # -------------------------------------------------------------------------
@@ -229,7 +193,7 @@ if __name__ == "__main__":
         epaisseur_couche=epaisseur_couche,
         altitude_couche_km=altitude_couche_km
     )
-
+     
     # -------------------------------------------------------------------------
     # Affichage des résultats
     # -------------------------------------------------------------------------
@@ -254,4 +218,5 @@ if __name__ == "__main__":
     print(f"tau_total  = {tau_total:.6e}")
     print()
 
-    print(f"Émissivité de la couche = {emissivite:.6f}")
+    print(f"Émissivité de la couche = {emissivite:.6f}") 
+    

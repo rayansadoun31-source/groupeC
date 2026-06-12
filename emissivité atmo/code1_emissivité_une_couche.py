@@ -144,3 +144,4 @@ if __name__ == "__main__":
     print(f"tau_CO2 = {tau_CO2:.6f}")
     print(f"tau_total = {tau_total:.6f}")
     print(f"émissivité = {emissivite:.6f}")
+    
