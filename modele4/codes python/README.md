@@ -1,1 +1,7 @@
-
+* [fonctions.py](fonctions.py) : boîte à outils contenant toutes les fonctions nécessaires pour charger, traiter et préparer les données géographiques, météo et solaires indispensables au lancement de la simulation.
+* [lib.py](lib.py) : constantes physiques universelles et les formules mathématiques fondamentales pour calculer les flux d'énergie (rayonnement solaire, chaleur thermique et évaporation) du modèle.
+* [modele_courbe.py](modele_courbe.py) : programme principal qui pilote la simulation : il configure le lieu à étudier, calcule l'évolution de la température heure par heure sur deux ans, et affiche les graphiques des résultats.
+* [modele_planisphere_basse_res.py](modele_planisphere_basse_res.py) : simulation et affichage d'une carte mondiale interactive (planisphère) des températures de surface, en laissant l'utilisateur choisir entre un modèle très simplifié ou un modèle complet nourri par de vraies données géospatiales, en basse résolution.
+* [modele_planisphere_haute_res.py](modele_planisphere_haute_res.py) : simulation et affichage d'une carte mondiale interactive (planisphère) des températures de surface, en laissant l'utilisateur choisir entre un modèle très simplifié ou un modèle complet nourri par de vraies données géospatiales, en haute résolution.
+* [modele_sphere_basse_res.py](modele_sphere_basse_res.py) : simulation et affichage d'une carte mondiale interactive (sphère) des températures de surface, en basse résolution.
+* [modele_sphere_haute_res.py](modele_sphere_haute_res.py) : simulation et affichage d'une carte mondiale interactive (sphère) des températures de surface, en haute résolution.
