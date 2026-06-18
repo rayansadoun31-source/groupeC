@@ -1,0 +1,6 @@
+* [Documentation_1_couche.pdf](https://github.com/rayansadoun31-source/groupeC/blob/main/Innovation_couche_atmospherique/Documentation_1_couche.pdf)=Le rapport technique qui explique les calculs physiques du premier modèle à une seule couche atmosphérique.
+* [Documentation_2_couche.pdf](Documentation_2_couche.pdf)= Le document qui détaille la physique, les mathématiques et la loi de Beer-Lambert pour le modèle à deux couches.
+* [Documentation_2_couche.tex](Documentation_2_couche.tex)= Le script Python qui contient toute la documentation technique du modèle à deux couches
+* [atmosphere_1_couche_tropausphere_8km.py](atmosphere_1_couche_tropausphere_8km.py)= Le script Python qui simule l'équilibre radiatif de la Terre avec une couche atmosphérique globale simple.
+* [atmosphere_2_couche_tropausphere_8km.py](atmosphere_2_couche_tropausphere_8km.py)= Le script Python qui calcule l'impact de la concentration de CO2 sur la température en divisant l'atmosphère en deux couches de masses égales
+* [atmosphere_n_couches_1013hpa_a_0hpa.py](atmosphere_n_couches_1013hpa_a_0hpa.py)= Le code de simulation le plus avancé, permettant de découper l'atmosphère en un grand nombre de couches (N-couches) pour plus de précision.
