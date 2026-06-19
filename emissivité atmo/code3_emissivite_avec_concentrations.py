@@ -1,6 +1,8 @@
 import numpy as np
 
-from code_H20_CH4_CO2 import get_gases_ppm
+from pathlib import Path 
+chemin = Path("températures_et_concentrations/code_H20_CH4_CO2_O3.py")
+exec(chemin.read_text())
 
 # =============================================================================
 # CONSTANTES ADMISES
@@ -9,6 +11,7 @@ from code_H20_CH4_CO2 import get_gases_ppm
 section_efficace_absorption_CO2 = 1e-25
 section_efficace_absorption_H2O = 1e-25
 section_efficace_absorption_CH4 = 1e-25
+section_efficace_absorption_O3 = 1e-25
 
 
 def calculer_densite_moleculaire_air(pression, temperature):
@@ -128,10 +131,12 @@ def calculer_emissivite_une_couche(
     CO2_ppm = concentrations["CO2 de mélange (Proportion)"]
     H2O_ppm = concentrations["H2O de mélange (Proportion)"]
     CH4_ppm = concentrations["CH4 de mélange (Proportion)"]
+    O3_ppm = concentrations["O3 de mélange (Proportion)"]
 
     fraction_molaire_CO2 = convertir_ppm_en_fraction_molaire(CO2_ppm)
     fraction_molaire_H2O = convertir_ppm_en_fraction_molaire(H2O_ppm)
     fraction_molaire_CH4 = convertir_ppm_en_fraction_molaire(CH4_ppm)
+    fraction_molaire_O3 = convertir_ppm_en_fraction_molaire(O3_ppm)
 
     tau_CO2 = calculer_epaisseur_optique_gaz(
         pression=pression,
@@ -157,15 +162,24 @@ def calculer_emissivite_une_couche(
         section_efficace_absorption_gaz=section_efficace_absorption_CH4
     )
 
+    tau_O3 = calculer_epaisseur_optique_gaz(
+        pression=pression,
+        temperature=temperature,
+        fraction_molaire_gaz=fraction_molaire_O3,
+        epaisseur_couche=epaisseur_couche,
+        section_efficace_absorption_gaz=section_efficace_absorption_O3
+    )
+
     tau_total = (
         tau_CO2
         + tau_H2O
         + tau_CH4
+        + tau_O3
     )
 
     emissivite = calculer_emissivite(tau_total)
 
-    return emissivite, tau_total, tau_CO2, tau_H2O, tau_CH4, concentrations
+    return emissivite, tau_total, tau_CO2, tau_H2O, tau_CH4, tau_O3, concentrations
 
 
 # =============================================================================
@@ -181,13 +195,13 @@ if __name__ == "__main__":
     pression = 101325.0          # Pa
     temperature = 288.0          # K
     epaisseur_couche = 100.0    # m
-    altitude_couche_km = 0.0     # km
+    altitude_couche_km = 20.0     # km
 
     # -------------------------------------------------------------------------
     # Calcul de l'émissivité
     # -------------------------------------------------------------------------
 
-    emissivite, tau_total, tau_CO2, tau_H2O, tau_CH4, concentrations = calculer_emissivite_une_couche(
+    emissivite, tau_total, tau_CO2, tau_H2O, tau_CH4, tau_O3, concentrations = calculer_emissivite_une_couche(
         pression=pression,
         temperature=temperature,
         epaisseur_couche=epaisseur_couche,
@@ -209,12 +223,14 @@ if __name__ == "__main__":
     print(f"CO2 : {concentrations['CO2 de mélange (Proportion)']:.6f} ppm")
     print(f"H2O : {concentrations['H2O de mélange (Proportion)']:.6f} ppm")
     print(f"CH4 : {concentrations['CH4 de mélange (Proportion)']:.6f} ppm")
+    print(f"O3 : {concentrations['O3 de mélange (Proportion)']:.6f} ppm")
     print()
 
     print("Épaisseurs optiques :")
     print(f"tau_CO2    = {tau_CO2:.6e}")
     print(f"tau_H2O    = {tau_H2O:.6e}")
     print(f"tau_CH4    = {tau_CH4:.6e}")
+    print(f"tau_O3     = {tau_O3:.6e}")
     print(f"tau_total  = {tau_total:.6e}")
     print()
 
