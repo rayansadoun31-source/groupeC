@@ -1,6 +1,9 @@
 import numpy as np
 
-from code3_emissivite_avec_concentrations import convertir_concentrations_en_fractions_molaires
+from code3_emissivite_avec_concentrations import (
+    convertir_concentrations_en_fractions_molaires,
+    get_gases_ppm
+)
 
 # ==========================================================
 # CONVERSION DES UNITÉS
@@ -257,22 +260,22 @@ def calculer_section_O3(longueur_onde):
 # SECTION EFFICACE MOYENNE DE L'ATMOSPHÈRE
 # ==========================================================
 
-def calculer_section_atmosphere(longueur_onde, concentrations):
+def calculer_section_atmosphere(longueur_onde, altitude_couche_km):
     """
-    Calcule une section efficace moyenne de l'atmosphère.
+    Calcule une section efficace moyenne de l'atmosphère à une altitude donnée.
 
-    On convertit d'abord les concentrations des gaz en fractions molaires,
-    puis on pondère la section efficace de chaque gaz par sa fraction molaire :
+    On récupère d'abord les concentrations des gaz en fonction de l'altitude,
+    on les convertit en fractions molaires, puis on pondère la section efficace
+    de chaque gaz par sa fraction molaire :
 
-        sigma_atmosphere =
-            fraction_CO2 * sigma_CO2
-          + fraction_CH4 * sigma_CH4
-          + fraction_H2O * sigma_H2O
-          + fraction_O3 * sigma_O3
-
-    Les concentrations doivent être exprimées en ppm.
+        sigma_atmosphere(lambda, z) =
+            fraction_CO2(z) * sigma_CO2(lambda)
+          + fraction_CH4(z) * sigma_CH4(lambda)
+          + fraction_H2O(z) * sigma_H2O(lambda)
+          + fraction_O3(z) * sigma_O3(lambda)
     """
 
+    concentrations = get_gases_ppm(altitude_couche_km)
     fractions_molaires = convertir_concentrations_en_fractions_molaires(concentrations)
 
     fraction_CO2 = fractions_molaires["CO2"]
@@ -294,6 +297,7 @@ def calculer_section_atmosphere(longueur_onde, concentrations):
     return section_atmosphere
 
 
+
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
@@ -301,19 +305,15 @@ if __name__ == "__main__":
     # VALEURS EN UN POINT
     # ==========================================================
 
-    lambda_test = 15e-6
-    concentrations_test = {
-        "CO2 de mélange (Proportion)": 420,
-        "H2O de mélange (Proportion)": 10000,
-        "CH4 de mélange (Proportion)": 1.9,
-        "O3 de mélange (Proportion)": 0
-    }
+    lambda_test = 10e-6
+    altitude_couche_km = 100
 
-    print("À 15 µm :")
-    print("CO2 :", calculer_section_CO2(lambda_test), "m²/molécule")
-    print("CH4 :", calculer_section_CH4(lambda_test), "m²/molécule")
-    print("H2O :", calculer_section_H2O(lambda_test), "m²/molécule")
-    print("Atmosphère :", calculer_section_atmosphere(lambda_test, concentrations_test), "m²/molécule")
+    print(f"À 15 µm et à {altitude_couche_km} km d'altitude :")
+    print("sigma_CO2 :", calculer_section_CO2(lambda_test), "m²/molécule")
+    print("sigma_CH4 :", calculer_section_CH4(lambda_test), "m²/molécule")
+    print("sigma_H2O :", calculer_section_H2O(lambda_test), "m²/molécule")
+    print("sigma_atmosphère :", calculer_section_atmosphere(lambda_test, altitude_couche_km), "m²/molécule")
+    print()
 
     # ==========================================================
     # GRAPHIQUE
@@ -321,19 +321,19 @@ if __name__ == "__main__":
 
     longueurs_onde = np.linspace(1e-6, 30e-6, 2000)
 
-    plt.semilogy(
+    plt.plot(
         longueurs_onde * 1e6,
         calculer_section_CO2(longueurs_onde),
         label='CO2'
     )
 
-    plt.semilogy(
+    plt.plot(
         longueurs_onde * 1e6,
         calculer_section_CH4(longueurs_onde),
         label='CH4'
     )
 
-    plt.semilogy(
+    plt.plot(
         longueurs_onde * 1e6,
         calculer_section_H2O(longueurs_onde),
         label='H2O'
