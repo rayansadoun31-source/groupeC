@@ -206,7 +206,7 @@ else:
         print("AVERTISSEMENT: Cartopy non trouvé. Utilisation du rendu Matplotlib standard.")
 
     # --- Chemins des fichiers de résultats ---
-    NPY_DIR = pathlib.Path("ressources/npy")
+    NPY_DIR = pathlib.Path("modele4/codes python/ressources/npy")
     STABILIZED_FILE = NPY_DIR / "grid_lowres_stabilized.npy"
     ONEYEAR_FILE = NPY_DIR / "grid_lowres_1yr.npy"
 
@@ -215,13 +215,13 @@ else:
     # ────────────────────────────────────────────────
     try:
         print("\n--- Chargement des données géospatiales ---")
-        ALBEDO_DIR = pathlib.Path("ressources/albedo")
+        ALBEDO_DIR = pathlib.Path("modele4/codes python/ressources/albedo")
         monthly_albedo_sol, LAT, LON = f.load_albedo_series(ALBEDO_DIR)
         NLAT, NLON = len(LAT), len(LON)
 
         RZSM_CSV_PATH = pathlib.Path(
-            "ressources/Cp_humidity/average_rzsm_tout.csv"
-        )
+            "modele4/codes python/ressources/Cp_humidity/average_rzsm_tout.csv"
+        )   
         RZSM_GRID, lat_bins_rzsm, lon_bins_rzsm = f.load_and_grid_rzsm_data(
             RZSM_CSV_PATH
         )
