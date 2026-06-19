@@ -24,7 +24,7 @@ def convertir_cm2_en_m2(section_cm2):
 
 def calculer_pic_absorption(longueur_onde, lambda_0, section_max, parametre_a):
     """
-    Calcule une section efficace d'absorption simplifiée autour d'un pic approximé par une gaussienne.
+    Calcule une section efficace d'absorption simplifiée autour d'un pic approximé par une exponentielle décroissante.
 
     sigma(lambda) = sigma_max * 10^(-parametre_a * |lambda - lambda_0| / lambda_0)
 
@@ -41,7 +41,7 @@ def calculer_pic_absorption(longueur_onde, lambda_0, section_max, parametre_a):
 
 def calculer_parametre_a(lambda_0, lambda_gauche, lambda_droite):
     """
-    Calcule le paramètre a qui correspond à la largeur du pic assimilé à une gaussienne.
+    Calcule le paramètre a qui correspond à la largeur du pic assimilé à une exponentielle décroissante.
 
     lambda_0 : longueur d'onde du sommet du pic
     lambda_gauche : longueur d'onde min à gauche
@@ -304,15 +304,15 @@ if __name__ == "__main__":
     # ==========================================================
     # VALEURS EN UN POINT
     # ==========================================================
-
-    lambda_test = 10e-6
+    lambda_test_µm = 10
+    lambda_test_m = lambda_test_µm * 1e-6
     altitude_couche_km = 100
 
-    print(f"À 15 µm et à {altitude_couche_km} km d'altitude :")
-    print("sigma_CO2 :", calculer_section_CO2(lambda_test), "m²/molécule")
-    print("sigma_CH4 :", calculer_section_CH4(lambda_test), "m²/molécule")
-    print("sigma_H2O :", calculer_section_H2O(lambda_test), "m²/molécule")
-    print("sigma_atmosphère :", calculer_section_atmosphere(lambda_test, altitude_couche_km), "m²/molécule")
+    print(f"À {lambda_test_µm} µm et à {altitude_couche_km} km d'altitude :")
+    print("sigma_CO2 :", calculer_section_CO2(lambda_test_m), "m²/molécule")
+    print("sigma_CH4 :", calculer_section_CH4(lambda_test_m), "m²/molécule")
+    print("sigma_H2O :", calculer_section_H2O(lambda_test_m), "m²/molécule")
+    print("sigma_atmosphère :", calculer_section_atmosphere(lambda_test_m, altitude_couche_km), "m²/molécule")
     print()
 
     # ==========================================================
