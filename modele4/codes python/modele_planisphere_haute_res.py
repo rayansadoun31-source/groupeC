@@ -200,7 +200,7 @@ else:
         print("AVERTISSEMENT: Cartopy non trouvé. Utilisation du rendu Matplotlib standard.")
 
     # --- Chemins des fichiers de résultats HAUTE RÉSOLUTION ---
-    NPY_DIR = pathlib.Path("ressources/npy")
+    NPY_DIR = pathlib.Path("modele4/codes python/ressources/npy")
     HIRES_STABILIZED_FILE = NPY_DIR / "grid_hires_stabilized.npy"
     HIRES_ONEYEAR_FILE = NPY_DIR / "grid_hires_1yr.npy"
 
@@ -280,10 +280,10 @@ else:
         
         print("\n--- Étape 1: Chargement et Suréchantillonnage des Données ---")
         try:
-            ALBEDO_DIR = pathlib.Path("ressources/albedo")
+            ALBEDO_DIR = pathlib.Path("modele4/codes python/ressources/albedo")
             monthly_albedo_lowres, LAT_lowres, LON_lowres = f.load_albedo_series(ALBEDO_DIR)
             RZSM_GRID_lowres, RZSM_LAT_lowres, RZSM_LON_lowres = f.load_and_grid_rzsm_data(
-                pathlib.Path("ressources/Cp_humidity/average_rzsm_tout.csv")
+                pathlib.Path("modele4/codes python/ressources/Cp_humidity/average_rzsm_tout.csv")
             )
             ceres_clim_lowres = f.load_monthly_cloud_albedo_from_ceres(
                 lat_deg=None, lon_deg=None, return_full_map=True

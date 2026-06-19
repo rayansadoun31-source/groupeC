@@ -323,7 +323,7 @@ def load_albedo_series(
 
 
 CERES_FILE_PATH = (
-    pathlib.Path("ressources/albedo")
+    pathlib.Path("modele4/codes python/ressources/albedo")
     / "CERES_EBAF-TOA_Ed4.2.1_Subset_202401-202501.nc"
 )
 
@@ -385,7 +385,7 @@ def load_monthly_cloud_albedo_from_ceres(
 # DÉTECTION DE CONTINENT
 # ────────────────────────────────────────────────
 SHAPEFILE_PATH = (
-    pathlib.Path("ressources/map") / "ne_110m_admin_0_countries.shp"
+    pathlib.Path("modele4/codes python/ressources/map") / "ne_110m_admin_0_countries.shp"
 )
 
 
