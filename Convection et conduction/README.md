@@ -1,4 +1,4 @@
-# Projet d'Étude des Transferts Thermiques (Groupe C)
+# Projet d'Étude des Transferts Thermiques 
 
 Ce dépôt rassemble les rapports, démonstrations et calculs scientifiques produits dans le cadre de l'analyse de la convection et de la conduction terrestre.
 
