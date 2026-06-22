@@ -88,7 +88,7 @@ else:
         print("AVERTISSEMENT: Cartopy non trouvé. Utilisation du rendu Matplotlib standard.")
 
     # --- Chemins des fichiers de résultats ---
-    NPY_DIR = pathlib.Path("modele_Tsol_principal/modele4/codes python/ressources/npy")
+    NPY_DIR = pathlib.Path("modele_Tsol_principal/modele_principal/codes python/ressources/npy")
     LOWRES_STABILIZED_FILE = NPY_DIR / "grid_lowres_stabilized_FORCAGE.npy"
     LOWRES_ONEYEAR_FILE = NPY_DIR / "grid_lowres_1yr_FORCAGE.npy"
 
@@ -97,12 +97,12 @@ else:
     # ────────────────────────────────────────────────
     try:
         print("\n--- Chargement des données géospatiales ---")
-        ALBEDO_DIR = pathlib.Path("modele_Tsol_principal/modele4/codes python/ressources/albedo")
+        ALBEDO_DIR = pathlib.Path("modele_Tsol_principal/modele_principal/codes python/ressources/albedo")
         monthly_albedo_sol, LAT, LON = f.load_albedo_series(ALBEDO_DIR)
         NLAT, NLON = len(LAT), len(LON)
 
         RZSM_CSV_PATH = pathlib.Path(
-                    "modele_Tsol_principal/modele4/codes python/ressources/Cp_humidity/average_rzsm_tout.csv"
+                    "modele_Tsol_principal/modele_principal/codes python/ressources/Cp_humidity/average_rzsm_tout.csv"
         )
         RZSM_GRID, lat_bins_rzsm, lon_bins_rzsm = f.load_and_grid_rzsm_data(
             RZSM_CSV_PATH
