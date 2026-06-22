@@ -123,8 +123,7 @@ if __name__ == "__main__":
     concentration_CO2_ppm = 415.0
     epaisseur_couche = 100.0    # m
 
-    # Coefficient effectif à choisir/calibrer
-    # Unité : m^2 par molécule
+    # Valeur choisie uniquement pour ce test, en m² par molécule.
     section_efficace_absorption_CO2 = 1e-25
 
     emissivite, tau_total, tau_CO2 = calculer_emissivite_une_couche(
@@ -144,4 +143,3 @@ if __name__ == "__main__":
     print(f"tau_CO2 = {tau_CO2:.6f}")
     print(f"tau_total = {tau_total:.6f}")
     print(f"émissivité = {emissivite:.6f}")
-    

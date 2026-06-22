@@ -4,13 +4,13 @@ import numpy as np
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ===================
-# BLACKBODY RADIATION
+# RAYONNEMENT DU CORPS NOIR
 # ===================
 
 def planck_function(lambda_wavelength, T):
-    h = 6.62607015e-34      # Planck's constant, J*s
-    c = 2.998e8             # Speed of light, m/s
-    kB = 1.380649e-23       # Boltzmann's constant, J/K
+    h = 6.62607015e-34      # constante de Planck, J·s
+    c = 2.998e8             # vitesse de la lumière, m/s
+    kB = 1.380649e-23       # constante de Boltzmann, J/K
     term1 = (2 * h * c**2) / lambda_wavelength**5
     term2 = np.exp((h * c) / (lambda_wavelength * kB * T)) - 1
     return term1 / term2
@@ -18,12 +18,12 @@ def planck_function(lambda_wavelength, T):
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ================
-# ATMOSPHERE MODEL
+# MODÈLE D'ATMOSPHÈRE
 # ================
 
 def pressure(z):
-    P0 = 101325     # Pressure at sea level in Pa
-    H = 8500        # Scale height in m
+    P0 = 101325     # pression au niveau de la mer, Pa
+    H = 8500        # hauteur d'échelle de l'atmosphère, m
     return P0 * np.exp(-z / H)
 
 def temperature_uniform(z):
@@ -31,42 +31,42 @@ def temperature_uniform(z):
     return T0 * np.ones_like(z)
 
 def temperature_simple(z):
-    T0 = 288.2     # Temperature at sea level in K
-    z_trop = 11000  # Tropopause height in m
-    Gamma = -0.0065 # Temperature gradient in K/m
+    T0 = 288.2      # température au niveau de la mer, K
+    z_trop = 11000  # altitude de la tropopause, m
+    Gamma = -0.0065 # gradient thermique, K/m
     T_trop = T0 + Gamma * z_trop
     return np.piecewise(z, [z < z_trop, z >= z_trop],
                         [lambda z: T0 + Gamma * z,
                          lambda z: T_trop])
 
 def temperature_US1976(z):
-    z_km = z/1000  # Convert altitude to km for easier comparisons
+    z_km = z/1000  # conversion de l'altitude en kilomètres
 
-    # Troposphere (0 to 11 km)
+    # Troposphère (0 à 11 km)
     T0 = 288.15
     z_trop = 11
 
-    # Tropopause (11 to 20 km)
+    # Tropopause (11 à 20 km)
     T_tropopause = 216.65
     z_tropopause = 20
 
-    # Stratosphere 1 (20 to 32 km)
+    # Basse stratosphère (20 à 32 km)
     T_strat1 = T_tropopause
     z_strat1 = 32
 
-    # Stratosphere 2 (32 to 47 km)
+    # Haute stratosphère (32 à 47 km)
     T_strat2 = 228.65
     z_strat2 = 47
 
-    # Stratopause (47 to 51 km)
+    # Stratopause (47 à 51 km)
     T_stratopause = 270.65
     z_stratopause = 51
 
-    # Mesosphere 1 (51 to 71 km)
+    # Basse mésosphère (51 à 71 km)
     T_meso1 = T_stratopause
     z_meso1 = 71
 
-    # Mesosphere 2 (71 to ...)
+    # Mésosphère au-delà de 71 km
     T_meso2 = 214.65
 
     return np.piecewise(z_km,
@@ -86,22 +86,23 @@ def temperature_US1976(z):
                          lambda z: T_meso2 - 2 * (z - z_meso1)])
 
 
-# ==> CHOOSE HERE THE TEMPERATURE MODEL
+# Profil de température choisi pour la simulation.
 def temperature(z):
     return temperature_simple(z)
 
 def air_number_density(z):
-    kB = 1.380649e-23  # Boltzmann's constant, J/K
+    kB = 1.380649e-23  # constante de Boltzmann, J/K
     return pressure(z) / (kB * temperature(z))
 
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ==============
-# CO2 ABSORPTION
+# ABSORPTION DU CO₂
 # ==============
 
 def cross_section_CO2(wavelength):
-    LAMBDA_0 = 15.0e-6  # Band center in m
+    # Le modèle représente l'absorption du CO₂ par une bande centrée sur 15 µm.
+    LAMBDA_0 = 15.0e-6  # centre de la bande, m
     exponent = -22.5 - 24 * np.abs((wavelength - LAMBDA_0) / LAMBDA_0)
     sigma = 10 ** exponent
     return sigma
@@ -109,39 +110,39 @@ def cross_section_CO2(wavelength):
 # ----------------------------------------------------------------------------------------------------------------------
 
 # =============================
-# RADIATIVE TRANSFER SIMULATION
+# SIMULATION DU TRANSFERT RADIATIF
 # =============================
 
-# All wavelengths are treated in parallel using vectorization
+# Toutes les longueurs d'onde sont calculées en même temps.
 
 def simulate_radiative_transfer(CO2_fraction, z_max = 80000, delta_z = 10, lambda_min = 0.1e-6, lambda_max = 100e-6, delta_lambda = 0.01e-6):
 
-    # Altitude and wavelength grids
+    # Grilles d'altitude et de longueur d'onde
     z_range = np.arange(0, z_max, delta_z)
     lambda_range = np.arange(lambda_min, lambda_max, delta_lambda)
 
-    # Initialize arrays
+    # Tableaux contenant les résultats pour chaque altitude et longueur d'onde
     upward_flux = np.zeros((len(z_range), len(lambda_range)))
     optical_thickness = np.zeros((len(z_range), len(lambda_range)))
 
-    # Boundary condition : Compute the outward vertical flux emitted by the Earth's surface for all wavelengths
+    # Flux émis par la surface terrestre à chaque longueur d'onde
     earth_flux = np.pi * planck_function(lambda_range, temperature(0)) * delta_lambda
     print(f"Total earth surface flux in wavelength range: {earth_flux.sum():.2f} W/m^2")
 
     flux_in = earth_flux
     for i, z in enumerate(z_range):
 
-        # Number density of CO2 molecules and absorption coefficient
+        # Quantité de CO₂ et absorption dans la couche
         n_CO2 = air_number_density(z) * CO2_fraction
         kappa = cross_section_CO2(lambda_range) * n_CO2
 
-        # Compute fluxes within the layer
+        # Le flux absorbé ne peut pas dépasser le flux reçu par la couche.
         optical_thickness[i,:] = kappa * delta_z
         absorbed_flux = np.minimum(kappa * delta_z * flux_in , flux_in)
         emitted_flux = optical_thickness[i,:] * np.pi * planck_function(lambda_range, temperature(z)) * delta_lambda
         upward_flux[i, :] = flux_in - absorbed_flux + emitted_flux
 
-        # The flux leaving the layer becomes the flux entering the next layer
+        # Le flux sortant devient le flux reçu par la couche suivante.
         flux_in = upward_flux[i, :]
 
     print(f"Total outgoing flux at the top of the atmosphere: {upward_flux[-1,:].sum():.2f} W/m^2")
@@ -157,9 +158,9 @@ lambda_range, z_range, upward_flux, optical_thickness = simulate_radiative_trans
 CO2_fraction *= 2
 lambda_range, z_range, upward_flux2, optical_thickness2 = simulate_radiative_transfer(CO2_fraction)
 
-# Plot top of atmosphere spectrum
+# Spectre au sommet de l'atmosphère
 plt.figure(figsize=(14, 9))
-# Superimpose blackbody spectrum at Earth's surface temperature and 220K
+# Corps noirs de référence à la température du sol et à 216 K.
 plt.plot(1e6 * lambda_range, np.pi * planck_function(lambda_range, temperature(0))/1e6,'--k')
 plt.plot(1e6 * lambda_range, np.pi * planck_function(lambda_range, 216)/1e6,'--k')
 
