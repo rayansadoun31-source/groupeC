@@ -3,10 +3,10 @@ Ce dossier regroupe les différnets codes modélisant les couches atmosphérique
 
 ## Scripts 
 
-### 1. [Modèle à 1 couche (`atmosphere_1_couche_tropausphere_8km.py`)](./atmosphere_1_couche_tropausphere_8km.py)
+### 1. [Modèle à 1 couche (`atmosphere_1_couche_troposphere_8km.py`)](./atmosphere_1_couche_troposphere_8km.py)
 Simulation numérique de l'équilibre radiatif et du bilan thermique de la Terre à l'aide d'un modèle d'atmosphère simplifié à une seule couche.
 
-### 2. [Modèle à 2 couches (`atmosphere_2_couche_tropausphere_8km.py`)](./atmosphere_2_couche_tropausphere_8km.py)
+### 2. [Modèle à 2 couches (`atmosphere_2_couche_troposphere_8km.py`)](./atmosphere_2_couche_troposphere_8km.py)
 Résolution du bilan énergétique terrestre via un découpage de l'atmosphère en deux couches de masses égales intégrant la loi de Beer-Lambert pour le $CO_2$.
 
 ### 3. [Modèle à N couches (`atmosphere_n_couches_1013hpa_a_0hpa.py`)](./atmosphere_n_couches_1013hpa_a_0hpa.py)
@@ -15,5 +15,5 @@ Généralisation algorithmique du modèle radiatif à un nombre arbitraire ($N$)
 ### 4. [Modèle de calcul pour le forçage radiatif (`Modele_forcage_radiatif_final.py`)](./Modele_forcage_radiatif_final.py)
 Code simulant un modèle de bilan radiatif de l'atmosphère terrestre en 1D (à 100 couches), afin de calculer l'équilibre thermique de la Terre, le flux d'énergie net et le forçage atmosphérique (rayonnement descendant) pour un jour spécifique de l'année. 
 
-### 5. [Modèle de calcul de forçage radiatif arborescence (`visualiser_rendu_atm.py`)](./visualiser_rendu_atm.py)
+### 5. [Planisphère du forçage radiatif (`visualiser_rendu_atm.py`)](./visualiser_rendu_atm.py)
 Code qui permet de voir un planisphère avec la valeur du forçage radiatif sur toute la Terre. Prend un fichier du type **Forcage_Atmospherique_6_AOUT.npy**, où seul la date change. Ces fichiers sont générer par **Modele_forcage_radiatif_final.py**
