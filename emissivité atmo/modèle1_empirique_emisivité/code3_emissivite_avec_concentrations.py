@@ -1,7 +1,7 @@
 import numpy as np
 
 from pathlib import Path
-chemin = Path(__file__).resolve().parent.parent.parent / "températures_et_concentrations" / "code_H20_CH4_CO2_O3.py"
+chemin = Path(__file__).resolve().parent.parent.parent / "temperatures_et_concentrations" / "code_H20_CH4_CO2_O3.py"
 
 espace_code_concentrations = {}
 
