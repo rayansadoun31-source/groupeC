@@ -89,8 +89,8 @@ else:
 
     # --- Chemins des fichiers de résultats ---
     NPY_DIR = pathlib.Path("modele4/codes python/ressources/npy")
-    STABILIZED_FILE = NPY_DIR / "grid_lowres_stabilized.npy"
-    ONEYEAR_FILE = NPY_DIR / "grid_lowres_1yr.npy"
+    LOWRES_STABILIZED_FILE = NPY_DIR / "grid_lowres_stabilized.npy"
+    LOWRES_ONEYEAR_FILE = NPY_DIR / "grid_lowres_1yr.npy"
 
     # ────────────────────────────────────────────────
     # CHARGEMENT DES DONNÉES GLOBALES
@@ -198,7 +198,7 @@ else:
 
     def run_full_simulation(days, stabilize=False):
         """Exécute la simulation pour toute la grille et sauvegarde le résultat."""
-        result_file = STABILIZED_FILE if stabilize else ONEYEAR_FILE
+        result_file = LOWRES_STABILIZED_FILE if stabilize else LOWRES_ONEYEAR_FILE
         NPY_DIR.mkdir(parents=True, exist_ok=True)
 
         sim_type = "stabilisée (2 ans)" if stabilize else "rapide (1 an)"
@@ -271,13 +271,13 @@ else:
     target_file = None
     run_sim = False
 
-    if STABILIZED_FILE.exists():
-        choice = input(f"Fichier stabilisé trouvé ('{STABILIZED_FILE.name}'). Charger (c) ou relancer (r) ? [c/r]: ").lower()
-        if choice == 'c': target_file = STABILIZED_FILE
+    if LOWRES_STABILIZED_FILE.exists():
+        choice = input(f"Fichier stabilisé trouvé ('{LOWRES_STABILIZED_FILE.name}'). Charger (c) ou relancer (r) ? [c/r]: ").lower()
+        if choice == 'c': target_file = LOWRES_STABILIZED_FILE
         else: run_sim = True
-    elif ONEYEAR_FILE.exists():
-        choice = input(f"Fichier sur 1 an trouvé ('{ONEYEAR_FILE.name}'). Charger (c) ou relancer (r) ? [c/r]: ").lower()
-        if choice == 'c': target_file = ONEYEAR_FILE
+    elif LOWRES_ONEYEAR_FILE.exists():
+        choice = input(f"Fichier sur 1 an trouvé ('{LOWRES_ONEYEAR_FILE.name}'). Charger (c) ou relancer (r) ? [c/r]: ").lower()
+        if choice == 'c': target_file = LOWRES_ONEYEAR_FILE
         else: run_sim = True
     else:
         run_sim = True
