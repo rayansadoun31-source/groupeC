@@ -13,6 +13,7 @@ import subprocess
 import sys
 from math import pi
 from scipy.ndimage import gaussian_filter1d
+from scipy.interpolate import RegularGridInterpolator
 
 # --- Import et gestion des dépendances optionnelles ---
 try:
@@ -475,3 +476,62 @@ def calculer_conduction_sol(T_surf, T_sol, dt_sim, k=0.75, D=5e-6, L=10.0):
     p_cond = -k * (T[-1] - T[-2]) / dx
 
     return T, p_cond
+
+# ────────────────────────────────────────────────
+# INTEGRATION DU FORÇAGE ATMOSPHÉRIQUE SAISONNIER
+# ────────────────────────────────────────────────
+
+def preparer_calendrier_forcage(nlat_cible, nlon_cible, total_days):
+    """
+    Charge la matrice de forçage 1°x1°, l'interpole à la 
+    résolution spatiale cible, et construit un calendrier temporel 3D 
+    de dimension (total_days, nlat_cible, nlon_cible).
+    """
+    # Chemin du fichier (ajusté selon l'arborescence de ton GitHub)
+    chemin_6_mai = pathlib.Path("donnees/Forcage_Atmospherique_6_MAI.npy")
+    
+    if not chemin_6_mai.exists():
+        raise FileNotFoundError(f"ERREUR CRITIQUE : Le fichier de forçage est introuvable à l'emplacement : {chemin_6_mai}")
+    
+    # 1. Chargement de la matrice brute (dim: 1, 180, 360) -> On extrait le canal 0 (180, 360)
+    matrice_brute = np.load(chemin_6_mai)[0]
+    
+    # 2. Définition des axes de la grille d'origine(180x360)
+    lat_or = np.linspace(-90, 90, 180)
+    lon_or = np.linspace(-180, 180, 360)
+    
+    # 3. Définition des axes de notre grille cible (définis par les arguments d'entrée)
+    lat_cible = np.linspace(-90, 90, nlat_cible)
+    lon_cible = np.linspace(-180, 180, nlon_cible)
+    
+    # 4. Interpolation spatiale unique (on étire ou compresse la matrice pour l'ajuster à ta grille)
+    interp = RegularGridInterpolator((lat_or, lon_or), matrice_brute, bounds_error=False, fill_value=None)
+    points_cibles = np.array(np.meshgrid(lat_cible, lon_cible, indexing="ij"))
+    matrice_printemps_interpolee = interp(np.moveaxis(points_cibles, 0, -1))
+    
+    # 5. Création du grand calendrier annuel vide
+    forcage_annuel = np.zeros((total_days, nlat_cible, nlon_cible))
+    
+    # 6. Remplissage par paliers saisonniers
+    # Pour ton test actuel, on propage la valeur du 6 mai sur TOUS les jours de l'année
+    # Dès que ton camarade te donnera les autres saisons, on utilisera des découpes du type [80:172]
+    for jour in range(total_days):
+        forcage_annuel[jour, :, :] = matrice_printemps_interpolee
+        
+    print(f"Calendrier de forçage atmosphérique généré avec succès pour {total_days} jours.")
+    return forcage_annuel
+
+
+if __name__ == "__main__":
+    # Ce bloc ne s'exécute QUE si tu lances ce fichier directement
+    print("--- DÉMARRAGE DU TEST UNITAIRE DE FORÇAGE ---")
+    try:
+        # On teste une génération pour ta Basse Résolution (36x72) sur 1 an (365 jours)
+        test_calendrier = preparer_calendrier_forcage(36, 72, 365)
+        
+        print("\n[SUCCÈS] Le fichier est lu et interpolé !")
+        print(f"Dimension de la matrice finale : {test_calendrier.shape} (Attendu : 365, 36, 72)")
+        print(f"Valeur moyenne du forçage mondial injecté : {np.mean(test_calendrier):.2f} W/m²")
+        
+    except Exception as e:
+        print(f"\n[ÉCHEC] Le test a planté. Erreur : {e}")
