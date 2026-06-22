@@ -19,4 +19,4 @@ Code simulant un modèle de bilan radiatif de l'atmosphère terrestre en 1D (à 
 Code qui permet de voir un planisphère avec la valeur du forçage radiatif sur toute la Terre. Prend un fichier du type **Forcage_Atmospherique_6_AOUT.npy**, où seul la date change. Ces fichiers sont générer par **Modele_forcage_radiatif_final.py**.
 
 ### 6. [Créer un fichier albédo de bonne taille (`creer_fichier_albedo_bonne_taille.py`)](./creer_fichier_albedo_bonne_taille.py)
-Code effectuant un prétraitement optimisé en mémoire (RAM) d'un fichier NetCDF pour interpoler spatialement et verticalement les données d'albédo atmosphérique, avant de les sauvegarder jour par jour dans un fichier binaire .npy directement sur le disque dur.
+Code effectuant un prétraitement optimisé en mémoire (RAM) d'un fichier NetCDF pour interpoler spatialement et verticalement les données d'albédo atmosphérique, avant de les sauvegarder jour par jour dans un fichier binaire .npy directement sur le disque dur. Ce code permet de générer le fichier **albedo_atm_pret_100c_180x360.npy** à partir du fichier **albedo_atm.nc**
