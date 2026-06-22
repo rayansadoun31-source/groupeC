@@ -7,7 +7,7 @@ Ce dossier regroupe les scripts de calcul, les documentations et les données pe
 ## Index des Documents et Livrables
 
 ### Documentation Technique
-* **[`Documentation_code_1.pdf`](Documentation_code_1.pdf)** | *Contenu :* Rapport technique explicitant la démarche physique et le fonctionnement du premier modèle à une seule couche.
+* **[`Documentation_code1.pdf`](Documentation_code_1.pdf)** | *Contenu :* Rapport technique explicitant la démarche physique et le fonctionnement du premier modèle à une seule couche.
 
 ### Outils de Calcul Spectral et Préparatoires
 * **[`calcul_section_efficace_CO2_CH4_H2O.py`](calcul_section_efficace_CO2_CH4_H2O.py)** | *Application :* Script Python calculant et traçant les spectres d'absorption (sections efficaces) du CO2, du CH4 et de l'H2O en fonction de la longueur d'onde.
