@@ -1,3 +1,8 @@
+# Codes
+Ce dossier regroupe les différnets codes modélisant les couches atmosphériques.
+
+## Scripts 
+
 ### 1. [Modèle à 1 couche (`atmosphere_1_couche_tropausphere_8km.py`)](./atmosphere_1_couche_tropausphere_8km.py)
 Simulation numérique de l'équilibre radiatif et du bilan thermique de la Terre à l'aide d'un modèle d'atmosphère simplifié à une seule couche.
 
