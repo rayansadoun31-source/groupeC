@@ -14,7 +14,7 @@ Ce premier dossier est dédié à l'étude de la structure verticale de l'atmosp
 ### 2. **[Émissivité Atmosphérique](https://github.com/rayansadoun31-source/groupeC/tree/6230a36e07cccac9a01ea89440c094b058b40177/innovations/emissivite_atmo)**
 Ce dossier central est consacré à l'étude quantitative de l'épaisseur optique et de l'émissivité de l'atmosphère terrestre. Il explore et compare deux approches numériques : une méthode empirique basée sur des approximations de spectres d'absorption, et une méthode haute résolution s'appuyant sur les données quantiques officielles de la base internationale HITRAN.
 
-### 3. [Modélisation de la Couche Atmosphérique](./modélisation_couche_atmo/)
+### 3. **[Modélisation de la Couche Atmosphérique](https://github.com/rayansadoun31-source/groupeC/tree/d95f3efdee9b6d7b6ad0ca072b5128c78a0585f8/innovations/couche_atmospherique)**
 Ce dossier se concentre sur l'équilibre radiatif global de la Terre. À partir des données de température et d'émissivité, il simule l'impact des gaz à effet de serre sur la température de surface en testant différentes configurations de découpage de l'atmosphère (modèles à 1 couche, 2 couches, puis généralisation à un nombre $N$ de couches).
 
 ### 4. [Modélisation de l'Albédo Atmosphérique](./albédo_atmosphérique/)
