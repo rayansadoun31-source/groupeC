@@ -7,7 +7,7 @@ Ce dossier rassemble les documents d'étude et les scripts de simulation numéri
 ## Index des Documents et Livrables
 
 ### Documentation Technique et Scientifique
-* **[Documentation_1_couche.pdf](https://github.com/rayansadoun31-source/groupeC/blob/main/Innovation_couche_atmospherique/Documentation_1_couche.pdf)** | *Contenu :* Rapport technique explicitant les calculs physiques du premier modèle à une seule couche atmosphérique.
+* **[Documentation_1_couche.pdf](https://github.com/rayansadoun31-source/groupeC/blob/3540167616d9941ed9b71325e53ea689fa27dbe9/innovations/couche_atmospherique/Documentation/modelisation1couche.pdf)** | *Contenu :* Rapport technique explicitant les calculs physiques du premier modèle à une seule couche atmosphérique.
 
 * **[`Documentation_2_couche.pdf`](Documentation_2_couche.pdf)** | *Contenu :* Document détaillant la physique, les développements mathématiques et l'application de la loi de Beer-Lambert pour le modèle à deux couches, puis généralisation à un nombre K de couches.
 
