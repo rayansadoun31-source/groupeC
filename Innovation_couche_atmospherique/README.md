@@ -9,9 +9,7 @@ Ce dossier rassemble les documents d'étude et les scripts de simulation numéri
 ### Documentation Technique et Scientifique
 * **[Documentation_1_couche.pdf](https://github.com/rayansadoun31-source/groupeC/blob/main/Innovation_couche_atmospherique/Documentation_1_couche.pdf)** | *Contenu :* Rapport technique explicitant les calculs physiques du premier modèle à une seule couche atmosphérique.
 
-* **[`Documentation_2_couche.pdf`](Documentation_2_couche.pdf)** | *Contenu :* Document détaillant la physique, les développements mathématiques et l'application de la loi de Beer-Lambert pour le modèle à deux couches.
-
-* **[`Documentation_2_couche.tex`](Documentation_2_couche.tex)** | *Contenu :* Code source LaTeX ayant servi à la rédaction et à la génération de la documentation technique du modèle à deux couches.
+* **[`Documentation_2_couche.pdf`](Documentation_2_couche.pdf)** | *Contenu :* Document détaillant la physique, les développements mathématiques et l'application de la loi de Beer-Lambert pour le modèle à deux couches, puis généralisation à un nombre K de couches.
 
 ### Scripts de Simulation Numérique (Python)
 * **[`atmosphere_1_couche_tropausphere_8km.py`](atmosphere_1_couche_tropausphere_8km.py)** | *Application :* Simulation de l'équilibre radiatif de la Terre avec une couche atmosphérique globale simple.
