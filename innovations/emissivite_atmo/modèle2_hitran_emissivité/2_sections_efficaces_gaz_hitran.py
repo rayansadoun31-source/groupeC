@@ -69,6 +69,7 @@ def charger_section_gaz(
     pression_atm=1.0,
 ):
     """Calcule la section efficace d'un gaz à une pression et une température."""
+    # Un résultat déjà calculé avec les mêmes paramètres est réutilisé.
     telecharger_raies_gaz(
         nom_table,
         numero_molecule,

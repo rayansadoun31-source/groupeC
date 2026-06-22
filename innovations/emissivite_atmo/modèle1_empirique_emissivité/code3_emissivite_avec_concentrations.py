@@ -1,6 +1,7 @@
 import numpy as np
 
 from pathlib import Path
+# Chargement de la fonction qui fournit les concentrations selon l'altitude.
 chemin = Path(__file__).resolve().parent.parent.parent / "temperatures_et_concentrations" / "code_H20_CH4_CO2_O3.py"
 
 espace_code_concentrations = {}
@@ -16,6 +17,7 @@ get_gases_ppm = espace_code_concentrations["get_gases_ppm"]
 # CONSTANTES ADMISES
 # =============================================================================
 
+# Valeurs simplifiées : la même section efficace est utilisée pour chaque gaz.
 section_efficace_absorption_CO2 = 1e-25
 section_efficace_absorption_H2O = 1e-25
 section_efficace_absorption_CH4 = 1e-25

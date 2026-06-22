@@ -4,6 +4,7 @@ import numpy as np
 # CONSTANTES ADMISES
 # =============================================================================
 
+# Dans ce modèle simple, les concentrations et les sections efficaces sont fixes.
 CO2_ppm = 415.0
 CH4_ppm = 1.9
 fraction_molaire_H2O = 0.01
@@ -177,7 +178,7 @@ if __name__ == "__main__":
     epaisseur_couche = 100.0    # m
 
     # -------------------------------------------------------------------------
-    # Fractions molaires des gaz
+    # Conversion des concentrations avant leur affichage
     # -------------------------------------------------------------------------
 
     fraction_molaire_CO2 = convertir_ppm_en_fraction_molaire(CO2_ppm)
@@ -217,4 +218,3 @@ if __name__ == "__main__":
     print()
 
     print(f"Émissivité de la couche = {emissivite:.6f}")
-    

@@ -13,6 +13,7 @@ import subprocess
 import sys
 from math import pi
 from scipy.ndimage import gaussian_filter1d
+from scipy.interpolate import RegularGridInterpolator
 
 # --- Import et gestion des dépendances optionnelles ---
 try:
@@ -475,3 +476,83 @@ def calculer_conduction_sol(T_surf, T_sol, dt_sim, k=0.75, D=5e-6, L=10.0):
     p_cond = -k * (T[-1] - T[-2]) / dx
 
     return T, p_cond
+
+# ────────────────────────────────────────────────
+# INTEGRATION DU FORÇAGE ATMOSPHÉRIQUE SAISONNIER
+# ────────────────────────────────────────────────
+
+def preparer_calendrier_forcage(nlat_cible, nlon_cible, total_days):
+    """
+    Charge les matrices saisonnières de forçage 1°x1°, les interpole à la 
+    résolution spatiale cible, et construit le calendrier temporel 3D complet 
+    par paliers saisonniers (Hiver, Printemps, Été, Automne).
+    """
+    # ────────────────────────────────────────────────
+    # 1. DÉFINITION DES CHEMINS DE FICHIERS
+    # ────────────────────────────────────────────────
+    dossier_donnees = pathlib.Path("donnees")
+    chemin_mai  = dossier_donnees / "Forcage_Atmospherique_6_MAI.npy"
+    chemin_aout = dossier_donnees / "Forcage_Atmospherique_6_AOUT.npy"
+    chemin_nov  = dossier_donnees / "Forcage_Atmospherique_6_NOVEMBRE.npy"
+    chemin_fev  = dossier_donnees / "Forcage_Atmospherique_6_FEVRIER.npy"
+
+    # Vérification de sécurité pour les fichiers indispensables actuels
+    for chemin in [chemin_mai, chemin_aout, chemin_nov, chemin_fev]:
+        if not chemin.exists():
+            raise FileNotFoundError(f"ERREUR CRITIQUE : Le fichier de forçage est introuvable : {chemin}")
+
+    # ────────────────────────────────────────────────
+    # 2. CHARGEMENT ET EXTRACTON DES CANAUX (180x360)
+    # ────────────────────────────────────────────────
+    raw_mai  = np.load(chemin_mai)[0]
+    raw_aout = np.load(chemin_aout)[0]
+    raw_nov  = np.load(chemin_nov)[0]
+    raw_fev  = np.load(chemin_fev)[0]
+    
+
+    # ────────────────────────────────────────────────
+    # 3. CONFIGURATION DES AXES D'INTERPOLATION
+    # ────────────────────────────────────────────────
+    lat_or = np.linspace(-90, 90, 180)
+    lon_or = np.linspace(-180, 180, 360)
+    
+    lat_cible = np.linspace(-90, 90, nlat_cible)
+    lon_cible = np.linspace(-180, 180, nlon_cible)
+    points_cibles = np.array(np.meshgrid(lat_cible, lon_cible, indexing="ij"))
+    coordonnees_interp = np.moveaxis(points_cibles, 0, -1)
+
+    # ────────────────────────────────────────────────
+    # 4. INTERPOLATION SPATIALE UNIQUE DES 4 MATRICES
+    # ────────────────────────────────────────────────
+    def _interpoler_carte(matrice_brute):
+        interp = RegularGridInterpolator((lat_or, lon_or), matrice_brute, bounds_error=False, fill_value=None)
+        return interp(coordonnees_interp)
+
+    print("Interpolation spatiale des 4 banques de données saisonnières...")
+    map_printemps = _interpoler_carte(raw_mai)
+    map_ete       = _interpoler_carte(raw_aout)
+    map_automne   = _interpoler_carte(raw_nov)
+    map_hiver     = _interpoler_carte(raw_fev)
+
+    # ────────────────────────────────────────────────
+    # 5. ASSEMBLAGE DU CALENDRIER ANNUEL PAR PALIERS
+    # ────────────────────────────────────────────────
+    forcage_annuel = np.zeros((total_days, nlat_cible, nlon_cible))
+    
+    for jour in range(total_days):
+        day_of_year = jour % 365
+        
+        # Découpage calendaire standard (Hypothèse astronomique)
+        if 0 <= day_of_year < 79:       # 1er Janvier au 20 Mars -> Hiver
+            forcage_annuel[jour, :, :] = map_hiver
+        elif 79 <= day_of_year < 172:   # 21 Mars au 20 Juin -> Printemps
+            forcage_annuel[jour, :, :] = map_printemps
+        elif 172 <= day_of_year < 264:  # 21 Juin au 20 Septembre -> Été
+            forcage_annuel[jour, :, :] = map_ete
+        elif 264 <= day_of_year < 355:  # 21 Septembre au 20 Décembre -> Automne
+            forcage_annuel[jour, :, :] = map_automne
+        else:                           # 21 Décembre au 31 Décembre -> Hiver
+            forcage_annuel[jour, :, :] = map_hiver
+            
+    print(f"Calendrier de forçage complet assemblé avec succès pour {total_days} jours.")
+    return forcage_annuel

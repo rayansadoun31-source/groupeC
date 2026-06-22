@@ -49,6 +49,7 @@ def calculer_parametre_a(lambda_0, lambda_gauche, lambda_droite):
     
     """
 
+    # On estime la largeur du pic à gauche et à droite, puis on fait la moyenne.
     ecart_gauche = abs((lambda_gauche - lambda_0) / lambda_0)
     ecart_droite = abs((lambda_droite - lambda_0) / lambda_0)
 
@@ -284,6 +285,7 @@ def calculer_section_atmosphere(longueur_onde, altitude_couche_km):
     fraction_O3 = fractions_molaires["O3"]
 
 
+    # Chaque section efficace est pondérée par la proportion du gaz dans l'air.
     section_atmosphere = (
         fraction_CO2 * calculer_section_CO2(longueur_onde)
         +

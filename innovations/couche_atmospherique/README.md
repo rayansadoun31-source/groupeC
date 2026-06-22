@@ -4,21 +4,10 @@ Ce dossier rassemble les documents d'étude et les scripts de simulation numéri
 
 ---
 
-## Index des Documents et Livrables
+## Index des Dossiers
 
-### Documentation Technique et Scientifique
-* **[modelisation1couche.pdf](https://github.com/rayansadoun31-source/groupeC/blob/3540167616d9941ed9b71325e53ea689fa27dbe9/innovations/couche_atmospherique/Documentation/modelisation1couche.pdf)** | *Contenu :* Rapport technique explicitant les calculs physiques du premier modèle à une seule couche atmosphérique.
+### 1. [Codes](./Codes/)
+Ce sous-dossier contient les codes modélisant à 1 couche, deux couches et K couches. 
 
-* **[modelisation2etKcouches.pdf](https://github.com/rayansadoun31-source/groupeC/blob/b2a0e4a58ca989c7e2b82a61d1ae1cdd34478059/innovations/couche_atmospherique/Documentation/modelisation2etKcouches.pdf)** | *Contenu :* Document détaillant la physique, les développements mathématiques et l'application de la loi de Beer-Lambert pour le modèle à deux couches, puis généralisation à un nombre K de couches.
-
-### Scripts de Simulation Numérique (Python)
-* **[atmosphere_1_couche_tropausphere_8km.py](https://github.com/rayansadoun31-source/groupeC/blob/1522dc722c16e8cda4e66f158d191720cccb06ed/innovations/couche_atmospherique/Codes/atmosphere_1_couche_tropausphere_8km.py)** | *Application :* Simulation de l'équilibre radiatif de la Terre avec une couche atmosphérique globale simple.
-
-* **[atmosphere_2_couche_tropausphere_8km.py](https://github.com/rayansadoun31-source/groupeC/blob/f279e82fc1263120dde300f40db239ca98f1a593/innovations/couche_atmospherique/Codes/atmosphere_2_couche_tropausphere_8km.py)** | *Application :* Calcul de l'impact de la concentration de CO2 sur la température de surface en divisant l'atmosphère en deux couches de masses égales.
-
-* **[atmosphere_n_couches_1013hpa_a_0hpa.py](https://github.com/rayansadoun31-source/groupeC/blob/a21579f1b6f74f24c723d9bff3cea59e57cb9eda/innovations/couche_atmospherique/Codes/atmosphere_n_couches_1013hpa_a_0hpa.py)** | *Application :* Code de simulation le plus avancé, permettant de découper l'atmosphère en un nombre arbitraire de couches (N-couches) pour une résolution numérique plus précise.
-
----
-
-## Utilisation
-Les scripts Python peuvent être exécutés individuellement pour générer les profils thermiques et les courbes d'équilibre radiatif correspondant à chaque modèle théorique présenté dans les documentations.
+### 2. [Documentation](./Documentation/)
+Ce sous-dossier explique tous les codes, ainsi que les modèles utilisés.
