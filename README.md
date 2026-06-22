@@ -22,4 +22,10 @@ Ce dossier centralise les ressources du modèle atmosphérique, regroupant les d
 
 ---
 
+## 4. **[Document de synthèse](https://github.com/rayansadoun31-source/groupeC/tree/main/donnees)**
+
+Document de synthèse qui référence ce qui a été fait cette année sur le projet.
+
+---
+
 > **Note :** Chaque dossier principal contient sa propre documentation détaillée avec les instructions d'exécution et les rapports d'analyse associés.
