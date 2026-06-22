@@ -20,6 +20,9 @@ Ce dossier se concentre sur l'équilibre radiatif global de la Terre. À partir 
 ### 4. **[Modélisation de l'Albédo Atmosphérique](https://github.com/rayansadoun31-source/groupeC/tree/cd2befafb5a1e72b343e9685873f1c2dd265ed08/innovations/albedo_atm)**
 Ce dossier traite de la réflexion du rayonnement solaire par l'atmosphère. À partir de données météorologiques réelles (réanalyses ERA5 via l'API Copernicus), il permet de calculer vectoriellement l'épaisseur optique des nuages (via l'approximation d'Eddington) et de cartographier dynamiquement l'albédo nuageux à l'échelle mondiale.
 
+### 5. **[Modélisation de l'Émissivité au Sol](https://github.com/rayansadoun31-source/groupeC/tree/5ed8d50fa2529dfe34c8ab9ae9ee62d145219cd7/innovations/emissivite_au_sol)**
+Ce dernier dossier élargit le modèle en intégrant le comportement radiatif de la surface terrestre. En s'appuyant sur l'imagerie satellitaire (données MODIS) via l'API Google Earth Engine, il permet d'extraire, de calibrer et de cartographier l'émissivité du sol à l'échelle mondiale afin de générer une climatologie annuelle consolidée.
+
 ---
 
 ## Logique de Progression
