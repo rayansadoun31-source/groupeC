@@ -14,6 +14,9 @@ Ce dossier contient le cœur algorithmique du quatrième modèle de simulation. 
 * **[`modele_courbe.py`](modele_courbe.py)** | *Application :* Programme principal pilotant la simulation. Il configure le lieu d'étude, calcule l'évolution de la température heure par heure sur deux ans et affiche les graphiques des résultats.
 
 ### Visualisations Cartographiques Globales
+
+* **[`modele_tres_simplifie.py`](modele_tres_simplifie.py)** | *Application :* Squelette logiciel ultra-simplifié à vocation pédagogique pour comprendre le fonctionnement des modèles finis.
+
 * **[`modele_planisphere_basse_res.py`](modele_planisphere_basse_res.py)** | *Application :* Simulation et affichage d'une carte mondiale (planisphère) des températures de surface en basse résolution, avec choix entre un modèle simplifié ou un modèle complet nourri par des données géospatiales.
 
 * **[`modele_planisphere_haute_res.py`](modele_planisphere_haute_res.py)** | *Application :* Simulation et affichage d'une carte mondiale (planisphère) des températures de surface en haute résolution, avec choix entre un modèle simplifié ou un modèle complet nourri par des données géospatiales.
@@ -27,6 +30,8 @@ Ce dossier contient le cœur algorithmique du quatrième modèle de simulation. 
 
 * **[`modele_planisphere_haute_res_interactif`](modele_planisphere_haute_res_interactif)** | *Application :* Script de simulation planétaire avancée en haute résolution spatiale (grille interpolée fine), offrant un rendu géographique précis et un suivi interactif de l'évolution thermique par clic utilisateur.
 
+### Outils de Post-Traitement et Couplage
+* **[`generer_donnees_sol.py`](generer_donnees_sol.py)** | *Application :* Script d'extraction et d'ingénierie de données. Il lit la matrice thermique issue de la simulation basse résolution, calcule les moyennes journalières, étend les températures sur des carrés de 1°/1° et exporte une base de données CSV prête à être ingérée par le modèle des couches atmosphériques.
 ---
 
 ## Utilisation
