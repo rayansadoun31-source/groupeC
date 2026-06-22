@@ -18,5 +18,5 @@ Code simulant un modèle de bilan radiatif de l'atmosphère terrestre en 1D (à 
 ### 5. [Planisphère du forçage radiatif (`visualiser_rendu_atm.py`)](./visualiser_rendu_atm.py)
 Code qui permet de voir un planisphère avec la valeur du forçage radiatif sur toute la Terre. Prend un fichier du type **Forcage_Atmospherique_6_AOUT.npy**, où seul la date change. Ces fichiers sont générer par **Modele_forcage_radiatif_final.py**
 
-### 6. [Bibliothèque à télécharger (`visualiser_rendu_atm.py`)](./visualiser_rendu_atm.py)
+### 6. [Bibliothèque à télécharger (`requirements.txt`)](./requirements.txt)
 Pour voir l'ensemble des bibliothèques python à télécharger nécessaire pour executé le code **Modele_forcage_radiatif_final.py**. Il faut s'assurer d'avoir la version python: Python 3.12.10
