@@ -1,6 +1,6 @@
 # Modèle 4 : Simulation Thermique Globale et Cartographie Interactive
 
-Ce dossier contient le cœur algorithmique du quatrième modèle de simulation. Il intègre des données géographiques, météorologiques et solaires pour modéliser l'évolution temporelle et spatiale des températures de surface de la Terre sous forme de cartes interactives (planisphères et sphères).
+Ce dossier contient le cœur algorithmique du quatrième modèle de simulation. Il intègre des données géographiques, météorologiques et solaires pour modéliser l'évolution temporelle et spatiale des températures de surface de la Terre sous forme de cartes interactives.
 
 ---
 
