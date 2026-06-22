@@ -8,6 +8,7 @@ from calcul_section_efficace_CO2_CH4_H2O import (
 )
 
 from pathlib import Path
+# Chargement de la fonction qui fournit les concentrations selon l'altitude.
 chemin = Path(__file__).resolve().parent.parent.parent / "temperatures_et_concentrations" / "code_H20_CH4_CO2_O3.py"
 
 espace_code_concentrations = {}
@@ -169,6 +170,7 @@ def calculer_emissivite_une_couche(
 
     concentrations = get_gases_ppm(altitude_couche_km)
 
+    # Calcul de la section efficace de chaque gaz aux longueurs d'onde demandées.
     sections_efficaces = {
         "CO2": calculer_section_CO2(longueur_onde),
         "H2O": calculer_section_H2O(longueur_onde),

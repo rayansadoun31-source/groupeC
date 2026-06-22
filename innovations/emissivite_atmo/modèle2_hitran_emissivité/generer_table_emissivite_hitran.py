@@ -45,6 +45,7 @@ def generer_table_emissivite_hitran(
     """Génère le CSV de l'émissivité HITRAN des couches atmosphériques."""
     fichier_sortie = Path(fichier_sortie)
 
+    # Le demi-pas permet d'inclure la longueur d'onde maximale dans la grille.
     longueurs_onde_um = np.arange(
         longueur_onde_min_um,
         longueur_onde_max_um + pas_longueur_onde_um / 2,
@@ -70,6 +71,7 @@ def generer_table_emissivite_hitran(
             temperature_C = profil["Temperature (°C)"]
             temperature_K = temperature_C + 273.15
 
+            # Calcul de toutes les longueurs d'onde pour cette altitude.
             resultats = calculer_emissivite_une_couche(
                 pression=pression,
                 temperature=temperature_K,
@@ -106,6 +108,7 @@ def generer_table_emissivite_hitran(
                     ]
                 )
 
+            # Enregistrement des lignes avant de passer à l'altitude suivante.
             fichier_csv.flush()
             print(
                 f"Altitude {altitude_km} km terminée "

@@ -6,17 +6,6 @@ Ce dossier regroupe les scripts d'acquisition, de calcul et d'intégration basé
 
 ## Index des Documents et Livrables
 
-### Documentation Technique et Références
-* **[`documentation_modele_hitran.tex`](documentation_modele_hitran.tex)** | *Contenu :* Code source LaTeX du rapport technique complet décrivant le fonctionnement mathématique et physique du modèle spectral d'émissivité.
-
-Une documentation LaTeX autonome est également fournie pour chaque code :
-
-* [`documentation_1_section_efficace_CO2_15um.tex`](documentation_1_section_efficace_CO2_15um.tex)
-* [`documentation_2_sections_efficaces_gaz_hitran.tex`](documentation_2_sections_efficaces_gaz_hitran.tex)
-* [`documentation_code_final_emissivite_avec_sections_hitran.tex`](documentation_code_final_emissivite_avec_sections_hitran.tex)
-* [`documentation_generer_table_emissivite_hitran.tex`](documentation_generer_table_emissivite_hitran.tex)
-* [`documentation_code_H20_CH4_CO2_O3.tex`](documentation_code_H20_CH4_CO2_O3.tex), pour le profil atmosphérique externe indispensable.
-
 * **[`references_hitran.bib`](references_hitran.bib)** | *Contenu :* Fichier de bibliographie BibTeX contenant les références d'articles scientifiques officiels pour la base de données HITRAN et l'interface Python HAPI.
 
 ### Scripts d'Acquisition et Calcul Spectral
