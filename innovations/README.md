@@ -1,8 +1,8 @@
 # Innovations
 
-Ce dossier principal regroupe l'ensemble des travaux, modélisations et simulations numériques dédiés à l'étude du climat terrestre, depuis l'analyse physique de l'atmosphère jusqu'à la simulation de l'équilibre radiatif de la Terre[cite: 4].
+Ce dossier principal regroupe l'ensemble des travaux, modélisations et simulations numériques dédiés à l'étude du climat terrestre, depuis l'analyse physique de l'atmosphère jusqu'à la simulation de l'équilibre radiatif de la Terre.
 
-Le projet est découpé en quatre grands dossiers complémentaires[cite: 4] :
+Le projet est découpé en quatre grands dossiers complémentaires :
 
 ---
 
@@ -18,16 +18,16 @@ Ce dossier central est consacré à l'étude quantitative de l'épaisseur optiqu
 Ce dossier se concentre sur l'équilibre radiatif global de la Terre. À partir des données de température et d'émissivité, il simule l'impact des gaz à effet de serre sur la température de surface en testant différentes configurations de découpage de l'atmosphère (modèles à 1 couche, 2 couches, puis généralisation à un nombre $N$ de couches).
 
 ### 4. [Modélisation de l'Albédo Atmosphérique](./albédo_atmosphérique/)
-Ce dossier traite de la réflexion du rayonnement solaire par l'atmosphère[cite: 4]. À partir de données météorologiques réelles (réanalyses ERA5 via l'API Copernicus), il permet de calculer vectoriellement l'épaisseur optique des nuages (via l'approximation d'Eddington) et de cartographier dynamiquement l'albédo nuageux à l'échelle mondiale.
+Ce dossier traite de la réflexion du rayonnement solaire par l'atmosphère. À partir de données météorologiques réelles (réanalyses ERA5 via l'API Copernicus), il permet de calculer vectoriellement l'épaisseur optique des nuages (via l'approximation d'Eddington) et de cartographier dynamiquement l'albédo nuageux à l'échelle mondiale.
 
 ---
 
 ## Logique de Progression
 
-Pour naviguer efficacement dans ce projet, il est recommandé de suivre cette démarche[cite: 4] :
+Pour naviguer efficacement dans ce projet, il est recommandé de suivre cette démarche :
 1. Comprendre la structure physique de base et la répartition des gaz (**Températures et Concentrations**).
 2. Analyser comment ces gaz absorbent et émettent l'énergie (**Émissivité Atmosphérique**).
-3. Intégrer la réflexion du rayonnement solaire par les nuages (**Albédo Atmosphérique**)[cite: 4].
+3. Intégrer la réflexion du rayonnement solaire par les nuages (**Albédo Atmosphérique**).
 4. Observer l'impact climatique global à travers les simulations radiatives (**Modélisation de la Couche Atmosphérique**).
 
 *Note : Pour le détail des scripts, des rapports physiques et des instructions d'exécution, veuillez vous référer au fichier `README.md` spécifique présent à l'intérieur de chaque dossier.*
