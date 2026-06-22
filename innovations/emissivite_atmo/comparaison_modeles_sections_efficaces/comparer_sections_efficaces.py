@@ -13,10 +13,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-DOSSIER_PROJET = Path(__file__).resolve().parent
-DOSSIER_EMPIRIQUE = DOSSIER_PROJET / "modèle_empirique_emisivité"
-DOSSIER_HITRAN = DOSSIER_PROJET / "modèle_hitran_emissivité"
-DOSSIER_SORTIE = DOSSIER_PROJET / "graphiques_comparaison_sections"
+DOSSIER_COMPARAISON = Path(__file__).resolve().parent
+DOSSIER_PROJET = DOSSIER_COMPARAISON.parent
+DOSSIER_EMPIRIQUE = DOSSIER_PROJET / "modèle1_empirique_emissivité"
+DOSSIER_HITRAN = DOSSIER_PROJET / "modèle2_hitran_emissivité"
+DOSSIER_SORTIE = DOSSIER_COMPARAISON
 
 TEMPERATURE_K = 296.0
 PRESSION_ATM = 1.0

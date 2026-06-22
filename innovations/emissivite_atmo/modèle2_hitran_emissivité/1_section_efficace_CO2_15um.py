@@ -2,7 +2,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-from hapi import absorptionCoefficient_Voigt, db_begin, fetch
+from hapi import absorptionCoefficient_Voigt, db_begin, fetch, select
 
 # Fonctions HAPI utilisées :
 # - db_begin : choisit le dossier où lire et enregistrer les données HITRAN.
@@ -26,13 +26,43 @@ def charger_section_co2(
     temperature=296.0,
     pression_atm=1.0,
 ):
-    """Télécharge les raies du CO2."""
+    """Charge les raies du CO₂, en privilégiant le cache local existant."""
     db_begin(str(DOSSIER_DONNEES))
-    fetch("CO2_15um", 2, 1, nombre_onde_min, nombre_onde_max)
 
-    """Calcule la section efficace."""
+    # Le projet contient déjà une table CO2 couvrant 4-100 µm. Sa portion
+    # 12-18 µm peut être réutilisée, ce qui rend le script exécutable hors
+    # ligne et évite un téléchargement identique à chaque lancement.
+    if all(
+        (DOSSIER_DONNEES / f"CO2{extension}").exists()
+        for extension in (".data", ".header")
+    ):
+        nom_table = "CO2"
+    else:
+        nom_table = "CO2_15um"
+        if not all(
+            (DOSSIER_DONNEES / f"{nom_table}{extension}").exists()
+            for extension in (".data", ".header")
+        ):
+            fetch(nom_table, 2, 1, nombre_onde_min, nombre_onde_max)
+
+    # La table CO2 complète contient des dizaines de milliers de raies. HAPI
+    # les parcourrait toutes malgré la petite plage demandée ; cette sélection
+    # en mémoire conserve aussi une marge pour les ailes des profils de Voigt.
+    nom_table_calcul = "__CO2_15um_plage"
+    select(
+        nom_table,
+        DestinationTableName=nom_table_calcul,
+        Conditions=(
+            "between",
+            "nu",
+            nombre_onde_min - 25.0,
+            nombre_onde_max + 25.0,
+        ),
+        Output=False,
+    )
+
     nombres_onde, sections_cm2 = absorptionCoefficient_Voigt(
-        SourceTables="CO2_15um",
+        SourceTables=nom_table_calcul,
         WavenumberRange=[nombre_onde_min, nombre_onde_max],
         WavenumberStep=pas_nombre_onde,
         Environment={"T": temperature, "p": pression_atm},
