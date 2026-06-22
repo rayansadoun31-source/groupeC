@@ -247,7 +247,7 @@ if __name__ == "__main__":
 
     pression = 101325.0          # Pa
     temperature = 288.0          # K
-    epaisseur_couche = 1     # m
+    epaisseur_couche = 100     # m
     altitude_couche_km = 0    # km
 
     # -------------------------------------------------------------------------
