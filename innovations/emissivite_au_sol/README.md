@@ -1,4 +1,4 @@
-# Modélisation de l'Émissivité au Sol (Google Earth Engine)
+# Modélisation de l'Émissivité au Sol 
 
 Ce sous-répertoire contient le script nécessaire pour générer une climatologie mondiale de l'émissivité de surface en s'appuyant sur l'imagerie satellitaire et le calcul cloud.
 
