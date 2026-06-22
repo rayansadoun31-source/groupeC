@@ -12,7 +12,7 @@ Ce dossier rassemble les documents d'étude et les scripts de simulation numéri
 * **[modelisation2etKcouches.pdf](https://github.com/rayansadoun31-source/groupeC/blob/b2a0e4a58ca989c7e2b82a61d1ae1cdd34478059/innovations/couche_atmospherique/Documentation/modelisation2etKcouches.pdf)** | *Contenu :* Document détaillant la physique, les développements mathématiques et l'application de la loi de Beer-Lambert pour le modèle à deux couches, puis généralisation à un nombre K de couches.
 
 ### Scripts de Simulation Numérique (Python)
-* **[`atmosphere_1_couche_tropausphere_8km.py`](atmosphere_1_couche_tropausphere_8km.py)** | *Application :* Simulation de l'équilibre radiatif de la Terre avec une couche atmosphérique globale simple.
+* **[atmosphere_1_couche_tropausphere_8km.py](https://github.com/rayansadoun31-source/groupeC/blob/1522dc722c16e8cda4e66f158d191720cccb06ed/innovations/couche_atmospherique/Codes/atmosphere_1_couche_tropausphere_8km.py)** | *Application :* Simulation de l'équilibre radiatif de la Terre avec une couche atmosphérique globale simple.
 
 * **[`atmosphere_2_couche_tropausphere_8km.py`](atmosphere_2_couche_tropausphere_8km.py)** | *Application :* Calcul de l'impact de la concentration de CO2 sur la température de surface en divisant l'atmosphère en deux couches de masses égales.
 
