@@ -3,7 +3,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-from hapi import absorptionCoefficient_Voigt, db_begin, fetch
+from hapi import absorptionCoefficient_Voigt, db_begin, fetch, select
 
 # Fonctions HAPI utilisées :
 # - db_begin : choisit le dossier où lire et enregistrer les données HITRAN.
@@ -77,8 +77,30 @@ def charger_section_gaz(
         nombre_onde_max,
     )
 
+    nom_table_calcul = nom_table
+    if (
+        nombre_onde_min > NOMBRE_ONDE_MIN_CM_1
+        or nombre_onde_max < NOMBRE_ONDE_MAX_CM_1
+    ):
+        # HAPI parcourt sinon toutes les raies de la table, même pour une seule
+        # longueur d'onde. On garde les raies voisines (marge pour les ailes de
+        # Voigt) dans une table en mémoire avant le calcul.
+        marge_raies_cm_1 = 25.0
+        nom_table_calcul = f"__{nom_table}_plage"
+        select(
+            nom_table,
+            DestinationTableName=nom_table_calcul,
+            Conditions=(
+                "between",
+                "nu",
+                nombre_onde_min - marge_raies_cm_1,
+                nombre_onde_max + marge_raies_cm_1,
+            ),
+            Output=False,
+        )
+
     nombres_onde, sections_cm2 = absorptionCoefficient_Voigt(
-        SourceTables=nom_table,
+        SourceTables=nom_table_calcul,
         WavenumberRange=[nombre_onde_min, nombre_onde_max],
         WavenumberStep=pas_nombre_onde,
         Environment={"T": temperature, "p": pression_atm},
@@ -113,9 +135,38 @@ def calculer_sections_gaz(
     pression_atm=1.0,
 ):
     """Calcule et interpole la section efficace d'un gaz."""
+    longueurs_onde_m = np.asarray(grille_longueurs_onde_m)
+    if (
+        longueurs_onde_m.size == 0
+        or not np.all(np.isfinite(longueurs_onde_m))
+        or np.any(longueurs_onde_m <= 0)
+    ):
+        raise ValueError("Les longueurs d'onde doivent être strictement positives.")
+
+    nombres_onde_demandes = np.asarray(
+        convertir_lambda_m_en_nombre_onde_cm_1(longueurs_onde_m)
+    )
+
+    # Ne calcule que la portion du spectre demandée. Pour un appel ponctuel
+    # (par exemple à 10 µm), cela évite de reconstruire inutilement toute la
+    # grille 4-100 µm. Une marge conserve assez de points pour l'interpolation.
+    marge_cm_1 = 0.1
+    nombre_onde_min = max(
+        NOMBRE_ONDE_MIN_CM_1,
+        float(np.min(nombres_onde_demandes)) - marge_cm_1,
+    )
+    nombre_onde_max = min(
+        NOMBRE_ONDE_MAX_CM_1,
+        float(np.max(nombres_onde_demandes)) + marge_cm_1,
+    )
+    if nombre_onde_min >= nombre_onde_max:
+        raise ValueError("Les longueurs d'onde doivent être comprises entre 4 et 100 µm.")
+
     nombres_onde, sections_gaz = charger_section_gaz(
         nom_table,
         numero_molecule,
+        nombre_onde_min=nombre_onde_min,
+        nombre_onde_max=nombre_onde_max,
         temperature=temperature,
         pression_atm=pression_atm,
     )
