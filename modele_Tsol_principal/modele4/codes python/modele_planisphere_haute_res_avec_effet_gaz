@@ -285,7 +285,7 @@ else:
             T_grid_all_times = run_full_hires_simulation(730, True)
         else:
             # Reste configuré sur 10 jours pour tes tests rapides en local
-            T_grid_all_times = run_full_hires_simulation(10, False)
+            T_grid_all_times = run_full_hires_simulation(365, False)
     else:
         print(f"Chargement de la matrice HI-RES depuis '{target_file}'...")
         T_grid_all_times = np.load(target_file)
