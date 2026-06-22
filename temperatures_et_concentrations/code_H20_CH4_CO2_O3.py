@@ -80,9 +80,13 @@ def get_gases_ppm(z_km):
     # --- 5. Calcul des concentrations ---
 
     # --- CO2 ---
-    co2_melange = co2_base
-    co2_volumique_absolu = co2_base * (P / P_sol) * (T_sol_K / T_K)
-
+    if z_km <= 85.0:
+        co2_melange = co2_base
+    else:
+    # Décroissance rapide symbolisant l'entrée dans l'hétérosphère
+        co2_melange = co2_base * math.exp(-(z_km - 85.0) / 10.0)
+    
+    co2_volumique_absolu = co2_melange * (P / P_sol) * (T_sol_K / T_K)
     # --- CH4 (Méthane) ---
     if z_km <= 11.0:
         ch4_melange = ch4_base

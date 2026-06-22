@@ -1,7 +1,7 @@
 import numpy as np
 
 from pathlib import Path
-chemin = Path(__file__).resolve().parent.parent.parent / "températures_et_concentrations" / "code_H20_CH4_CO2_O3.py"
+chemin = Path(__file__).resolve().parent.parent.parent / "temperatures_et_concentrations" / "code_H20_CH4_CO2_O3.py"
 
 espace_code_concentrations = {}
 
@@ -247,7 +247,7 @@ if __name__ == "__main__":
 
     pression = 101325.0          # Pa
     temperature = 288.0          # K
-    epaisseur_couche = 1     # m
+    epaisseur_couche = 100     # m
     altitude_couche_km = 0    # km
 
     # -------------------------------------------------------------------------
