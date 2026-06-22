@@ -12,7 +12,7 @@ Ce sous-dossier abrite le volet algorithmique et numérique le plus avancé pour
 
 ### 2. [Convection et Conduction : Étude des Transferts Thermiques](./convection_et_conduction/)
 Ce sous-dossier pose les fondements théoriques, physiques et mathématiques indispensables à la validation des modèles numériques du projet.
-* **Résumé du contenu :** Il regroupe l'ensemble des rapports scientifiques, des démonstrations rigoureuses et des analyses quantitatives du groupe. Ces travaux visent à déterminer précisément la puissance surfacique liée aux phénomènes de convection et à apporter les preuves physiques justifiant le caractère négligeable de la conduction radiale et orthoradiale dans les modélisations globales.
+* **Résumé du contenu :** Il regroupe l'ensemble des rapports scientifiques, des démonstrations rigoureuses et des analyses quantitatives sur la conduction et la convection. Ces travaux visent à déterminer précisément la puissance surfacique liée aux phénomènes de convection et à apporter les preuves physiques justifiant le caractère négligeable de la conduction radiale et orthoradiale dans les modélisations globales.
 
 ---
 
