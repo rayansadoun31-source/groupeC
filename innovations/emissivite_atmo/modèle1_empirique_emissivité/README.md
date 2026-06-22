@@ -26,7 +26,7 @@ Ce dossier regroupe les scripts de calcul, les documentations et les données pe
 
 * **[`code4_emissivite_avec_section_eff.py`](code4_emissivite_avec_section_eff.py)** | *Application :* Version la plus complète du modèle. Elle calcule l'émissivité d'une couche atmosphérique en combinant à la fois les profils de concentration verticaux et les spectres d'absorption (sections efficaces) de quatre gaz (CO2, H2O, CH4 et O3).
 
-* **['code_sciences_etonnantes_co2_traverse_atmosphere.py'](code_sciences_etonnantes_co2_traverse_atmosphere.py)** | *Application :*Script proposant un modèle unidimensionnel de transfert radiatif simulant l'effet de serre terrestre, permettant de visualiser l'impact de différentes concentrations de CO2 sur le spectre du rayonnement infrarouge s'échappant de l'atmosphère vers l'espace.
+* **[`code_sciences_etonnantes_co2_traverse_atmosphere.py`](code_sciences_etonnantes_co2_traverse_atmosphere.py)** | *Application :*Script proposant un modèle unidimensionnel de transfert radiatif simulant l'effet de serre terrestre, permettant de visualiser l'impact de différentes concentrations de CO2 sur le spectre du rayonnement infrarouge s'échappant de l'atmosphère vers l'espace.
 
 ### Génération et Exportation de Données
 * **[`generer_table_emissivite.py`](generer_table_emissivite.py)** | *Application :* Script final configuré pour générer et exporter un fichier de données complet (CSV) recensant l'émissivité spectrale de l'atmosphère pour chaque altitude et chaque longueur d'onde.
