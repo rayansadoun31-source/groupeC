@@ -14,7 +14,7 @@ Afin de faciliter la navigation au sein du projet, voici les différents rapport
 ### Démonstrations et Preuves Scientifiques
 * **[Rapport d’étude de la conduction terrestre.pdf](https://github.com/rayansadoun31-source/groupeC/blob/eec850a6b3644e4b53d766e0f735e063ef924143/modele_Tsol_principal/Convection%20et%20conduction/Rapport%20d%E2%80%99%C3%A9tude%20de%20la%20conduction%20terrestre.pdf)** | *Objectif :* Preuve rigoureuse du caractère négligeable de la **conduction radiale**.
 
-* **[`Diffusion.pdf`](Diffusion.pdf)** | *Objectif :* Preuve mathématique et physique du caractère négligeable de la **conduction orthoradiale**.
+* **[Diffusion.pdf](https://github.com/rayansadoun31-source/groupeC/blob/843cbaa7b070145b6ce104e4967451f5427ad921/modele_Tsol_principal/Convection%20et%20conduction/Diffusion.pdf)** | *Objectif :* Preuve mathématique et physique du caractère négligeable de la **conduction orthoradiale**.
 
 ---
 
