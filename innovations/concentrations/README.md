@@ -9,7 +9,7 @@ Ce dossier regroupe les scripts de modélisation, les codes d'étude et les docu
 ### Documentation et Analyses Théoriques
 * **[`Version_1-projet_climat`](Version_1-projet_climat)** | *Contenu :* Première version d'étude combinant les calculs de concentration de chaque gaz à effet de serre (GES) en fonction de l'altitude et des profils thermiques.
 
-* **[`Commentaire_code.pdf`](Commentaire_code.pdf)** | *Contenu :* Rapport technique contenant les explications détaillées, la démarche physique et la structure algorithmique du programme de la version 1.
+* **[`Documentation_temperature_concentration_gaz.pdf`](Documentation_temperature_concentration_gaz.pdf)** | *Contenu :* Rapport d'étude concernant l'évolution de la température, de la pression et de la concentration des principaux gaz à effet de serre selon l'altitude, dans le but final de créer un code python.
 
 ### Scripts de Modélisation (Python)
 * **[`code_température_altitude.py`](code_température_altitude.py)** | *Application :* Script Python dédié à la modélisation mathématique et physique de la variation de la température en fonction de l'altitude au sein des différentes couches atmosphériques.
