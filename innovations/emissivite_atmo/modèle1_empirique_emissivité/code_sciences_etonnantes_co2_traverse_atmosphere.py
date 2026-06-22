@@ -115,15 +115,29 @@ def cross_section_CO2(wavelength):
 
 # Toutes les longueurs d'onde sont calculées en même temps.
 
-def simulate_radiative_transfer(CO2_fraction, z_max = 80000, delta_z = 10, lambda_min = 0.1e-6, lambda_max = 100e-6, delta_lambda = 0.01e-6):
+def simulate_radiative_transfer(
+    CO2_fraction,
+    z_max=80000,
+    delta_z=10,
+    lambda_min=0.1e-6,
+    lambda_max=100e-6,
+    delta_lambda=0.01e-6,
+    conserver_historique=True,
+):
 
     # Grilles d'altitude et de longueur d'onde
     z_range = np.arange(0, z_max, delta_z)
     lambda_range = np.arange(lambda_min, lambda_max, delta_lambda)
 
-    # Tableaux contenant les résultats pour chaque altitude et longueur d'onde
-    upward_flux = np.zeros((len(z_range), len(lambda_range)))
-    optical_thickness = np.zeros((len(z_range), len(lambda_range)))
+    # L'historique complet est utile pour étudier chaque altitude, mais coûte
+    # environ 1,2 Go avec la grille par défaut. Le mode léger ne conserve que
+    # les valeurs au sommet de l'atmosphère.
+    if conserver_historique:
+        upward_flux = np.zeros((len(z_range), len(lambda_range)))
+        optical_thickness = np.zeros((len(z_range), len(lambda_range)))
+    else:
+        upward_flux = np.zeros((1, len(lambda_range)))
+        optical_thickness = np.zeros((1, len(lambda_range)))
 
     # Flux émis par la surface terrestre à chaque longueur d'onde
     earth_flux = np.pi * planck_function(lambda_range, temperature(0)) * delta_lambda
@@ -137,13 +151,21 @@ def simulate_radiative_transfer(CO2_fraction, z_max = 80000, delta_z = 10, lambd
         kappa = cross_section_CO2(lambda_range) * n_CO2
 
         # Le flux absorbé ne peut pas dépasser le flux reçu par la couche.
-        optical_thickness[i,:] = kappa * delta_z
+        epaisseur_optique_couche = kappa * delta_z
         absorbed_flux = np.minimum(kappa * delta_z * flux_in , flux_in)
-        emitted_flux = optical_thickness[i,:] * np.pi * planck_function(lambda_range, temperature(z)) * delta_lambda
-        upward_flux[i, :] = flux_in - absorbed_flux + emitted_flux
+        emitted_flux = epaisseur_optique_couche * np.pi * planck_function(lambda_range, temperature(z)) * delta_lambda
+        flux_out = flux_in - absorbed_flux + emitted_flux
+
+        if conserver_historique:
+            optical_thickness[i, :] = epaisseur_optique_couche
+            upward_flux[i, :] = flux_out
 
         # Le flux sortant devient le flux reçu par la couche suivante.
-        flux_in = upward_flux[i, :]
+        flux_in = flux_out
+
+    if not conserver_historique:
+        optical_thickness[0, :] = epaisseur_optique_couche
+        upward_flux[0, :] = flux_in
 
     print(f"Total outgoing flux at the top of the atmosphere: {upward_flux[-1,:].sum():.2f} W/m^2")
 
@@ -151,27 +173,36 @@ def simulate_radiative_transfer(CO2_fraction, z_max = 80000, delta_z = 10, lambd
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-# MAIN
+def main():
+    """Compare les spectres sortants pour 280 et 560 ppm de CO₂."""
+    CO2_fraction = 280e-6
+    lambda_range, _, upward_flux, _ = simulate_radiative_transfer(
+        CO2_fraction,
+        conserver_historique=False,
+    )
+    lambda_range, _, upward_flux2, _ = simulate_radiative_transfer(
+        2 * CO2_fraction,
+        conserver_historique=False,
+    )
 
-CO2_fraction = 280e-6
-lambda_range, z_range, upward_flux, optical_thickness = simulate_radiative_transfer(CO2_fraction)
-CO2_fraction *= 2
-lambda_range, z_range, upward_flux2, optical_thickness2 = simulate_radiative_transfer(CO2_fraction)
+    # Spectre au sommet de l'atmosphère
+    plt.figure(figsize=(14, 9))
+    # Corps noirs de référence à la température du sol et à 216 K.
+    plt.plot(1e6 * lambda_range, np.pi * planck_function(lambda_range, temperature(0))/1e6,'--k')
+    plt.plot(1e6 * lambda_range, np.pi * planck_function(lambda_range, 216)/1e6,'--k')
 
-# Spectre au sommet de l'atmosphère
-plt.figure(figsize=(14, 9))
-# Corps noirs de référence à la température du sol et à 216 K.
-plt.plot(1e6 * lambda_range, np.pi * planck_function(lambda_range, temperature(0))/1e6,'--k')
-plt.plot(1e6 * lambda_range, np.pi * planck_function(lambda_range, 216)/1e6,'--k')
+    delta_lambda = lambda_range[1] - lambda_range[0]
+    plt.plot(1e6 * lambda_range, upward_flux[-1, :]/delta_lambda/1e6,'-g')
+    plt.plot(1e6 * lambda_range, upward_flux2[-1, :]/delta_lambda/1e6,'-r')
+    plt.fill_between(1e6 * lambda_range, upward_flux[-1, :]/delta_lambda/1e6, upward_flux2[-1, :]/delta_lambda/1e6, color='yellow', alpha=0.9)
+    plt.xlabel("Longueur d'onde (μm)")
+    plt.ylabel("Luminance spectrale (W/m²/μm/sr)")
+    plt.xlim(0, 50)
+    plt.ylim(0, 30)
+    plt.grid(True)
+    plt.show()
 
-delta_lambda = lambda_range[1] - lambda_range[0]
-plt.plot(1e6 * lambda_range, upward_flux[-1, :]/delta_lambda/1e6,'-g')
-plt.plot(1e6 * lambda_range, upward_flux2[-1, :]/delta_lambda/1e6,'-r')
-plt.fill_between(1e6 * lambda_range, upward_flux[-1, :]/delta_lambda/1e6, upward_flux2[-1, :]/delta_lambda/1e6, color='yellow', alpha=0.9)
-plt.xlabel("Longueur d'onde (μm)")
-plt.ylabel("Luminance spectrale (W/m²/μm/sr)")
-plt.xlim(0, 50)
-plt.ylim(0, 30)
-plt.grid(True)
-plt.show()
+
+if __name__ == "__main__":
+    main()
 # ----------------------------------------------------------------------------------------------------------------------
