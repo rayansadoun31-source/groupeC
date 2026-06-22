@@ -1,4 +1,4 @@
-# Modélisation Atmosphérique, Émissivité et Équilibre Radiatif
+# Innovations
 
 Ce dossier principal regroupe l'ensemble des travaux, modélisations et simulations numériques dédiés à l'étude du climat terrestre, depuis l'analyse physique de l'atmosphère jusqu'à la simulation de l'équilibre radiatif de la Terre.
 
