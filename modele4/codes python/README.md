@@ -14,6 +14,9 @@ Ce dossier contient le cœur algorithmique du quatrième modèle de simulation. 
 * **[`modele_courbe.py`](modele_courbe.py)** | *Application :* Programme principal pilotant la simulation. Il configure le lieu d'étude, calcule l'évolution de la température heure par heure sur deux ans et affiche les graphiques des résultats.
 
 ### Visualisations Cartographiques Globales
+
+* **[`modele_tres_simplifie.py`](modele_tres_simplifie.py)** | *Application :* Squelette logiciel ultra-simplifié à vocation pédagogique pour comprendre le fonctionnement des modèles finis.
+
 * **[`modele_planisphere_basse_res.py`](modele_planisphere_basse_res.py)** | *Application :* Simulation et affichage d'une carte mondiale (planisphère) des températures de surface en basse résolution, avec choix entre un modèle simplifié ou un modèle complet nourri par des données géospatiales.
 
 * **[`modele_planisphere_haute_res.py`](modele_planisphere_haute_res.py)** | *Application :* Simulation et affichage d'une carte mondiale (planisphère) des températures de surface en haute résolution, avec choix entre un modèle simplifié ou un modèle complet nourri par des données géospatiales.
