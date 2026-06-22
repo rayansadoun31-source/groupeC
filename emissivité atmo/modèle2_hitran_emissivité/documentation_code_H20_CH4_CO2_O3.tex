@@ -1,0 +1,122 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern,geometry,microtype}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage[version=4]{mhchem}
+\usepackage{xcolor,listings,hyperref}
+\geometry{margin=2.4cm}
+\sisetup{locale=FR,per-mode=symbol}
+\DeclareSIUnit\ppm{ppm}
+\lstset{language=Python,basicstyle=\ttfamily\small,backgroundcolor=\color{black!4},frame=single,breaklines=true,showstringspaces=false}
+\hypersetup{colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!55!black}
+
+\title{Documentation de \texttt{code\_H20\_CH4\_CO2\_O3.py}}
+\author{Projet climat 2026}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\section{Emplacement et rôle}
+
+Le fichier documenté se trouve dans
+\path{../../temperatures_et_concentrations/code_H20_CH4_CO2_O3.py}, relativement
+au dossier du modèle HITRAN. Il fournit le profil vertical simplifié utilisé
+par \path{code_final_emissivite_avec_sections_hitran.py} : température,
+pression et concentrations de \ce{CO2}, \ce{CH4}, \ce{O3} et \ce{H2O}.
+
+Malgré la chaîne \texttt{H20} présente dans son nom, le gaz traité par le
+code et par les clés de sortie est bien \texttt{H2O}.
+
+\section{Import préalable}
+
+\begin{lstlisting}
+import math
+\end{lstlisting}
+
+\texttt{math} appartient à la bibliothèque standard de Python. Aucun paquet
+\texttt{pip} supplémentaire n'est requis par ce fichier. Le module est chargé
+par \texttt{exec} dans le modèle actuel, qui récupère ensuite la fonction
+\texttt{get\_gases\_ppm}.
+
+\section{Fonction \texttt{temperature\_atmosphere(z)}}
+
+\textbf{Entrée :} altitude \texttt{z} en kilomètres.
+
+\textbf{Retour :} température en degrés Celsius.
+
+Le profil est affine par morceaux, avec des limites à 0, 11, 20, 32, 50,
+71 et \SI{85}{\kilo\metre}. Les gradients successifs sont $-6{,}5$, 0, 1,
+$2{,}8$, $-2{,}8$, $-2$ et \SI{12}{\kelvin\per\kilo\metre}. La dernière
+expression est aussi utilisée hors de la plage principale.
+
+\section{Fonction \texttt{get\_gases\_ppm(z\_km)}}
+
+\textbf{Entrée :} altitude en kilomètres.
+
+\textbf{Retour :} dictionnaire contenant altitude, température, pression et
+deux grandeurs par gaz : proportion de mélange et quantité volumique absolue.
+Le modèle HITRAN utilise les champs de mélange comme concentrations en ppm.
+
+\subsection{Pression atmosphérique}
+
+Les constantes sont $g=\SI{9.80665}{\metre\per\second\squared}$,
+$M=\SI{0.0289644}{\kilogram\per\mole}$,
+$R=\SI{8.31445}{\joule\per\mole\per\kelvin}$ et
+$p_0=\SI{101325}{\pascal}$. Pour une couche à gradient thermique non nul,
+\begin{equation}
+  p=p_0\left(\frac{T}{T_0}\right)^{-gM/(R\alpha)}.
+\end{equation}
+Pour une couche isotherme,
+\begin{equation}
+  p=p_0\exp\left(-\frac{gM\Delta z}{RT_0}\right).
+\end{equation}
+Les pressions aux limites sont d'abord propagées, puis la formule de la couche
+contenant l'altitude demandée est appliquée.
+
+\subsection{Profils des gaz}
+
+\begin{itemize}
+  \item \ce{CO2} : proportion constante de \SI{425}{\ppm} ;
+  \item \ce{CH4} : \SI{1.9}{\ppm} jusqu'à \SI{11}{\kilo\metre}, puis
+        décroissance exponentielle de hauteur \SI{25}{\kilo\metre} ;
+  \item \ce{O3} : fond de \SI{0.1}{\ppm}, avec un profil gaussien entre 15 et
+        \SI{35}{\kilo\metre}, centré à \SI{25}{\kilo\metre} et culminant à
+        \SI{8}{\ppm} ;
+  \item \ce{H2O} : pression de vapeur saturante et humidité relative
+        décroissante sous \SI{11}{\kilo\metre}, avec un plancher de
+        \SI{4}{\ppm}.
+\end{itemize}
+
+Les quantités dites « volumique absolu » sont corrigées par
+$(p/p_{\mathrm{sol}})(T_{\mathrm{sol}}/T)$, mais elles ne sont pas utilisées
+par le calcul HITRAN actuel.
+
+\section{Clés du dictionnaire utiles au modèle HITRAN}
+
+\begin{lstlisting}
+"Temperature (°C)"
+"Pression locale (Pa)"
+"CO2 de mélange (Proportion)"
+"H2O de mélange (Proportion)"
+"CH4 de mélange (Proportion)"
+"O3 de mélange (Proportion)"
+\end{lstlisting}
+
+Toute modification de ces libellés doit être reportée dans
+\path{code_final_emissivite_avec_sections_hitran.py} et
+\path{generer_table_emissivite_hitran.py}.
+
+\section{Limites}
+
+Le profil est une atmosphère de référence paramétrique, non une observation
+météorologique. Les valeurs sont arrondies dans le dictionnaire. L'extrapolation
+thermique au-dessus de \SI{85}{\kilo\metre}, le plancher de vapeur d'eau et le
+profil d'ozone sont des simplifications à prendre en compte dans l'analyse des
+résultats.
+
+\end{document}
