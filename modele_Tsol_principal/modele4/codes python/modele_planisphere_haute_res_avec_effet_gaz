@@ -81,8 +81,8 @@ if est_modele_simplifie:
 else:
     # --- Chemins des fichiers de résultats HAUTE RÉSOLUTION ---
     NPY_DIR = pathlib.Path("modele_Tsol_principal/modele4/codes python/ressources/npy")
-    HIRES_STABILIZED_FILE = NPY_DIR / "grid_hires_stabilized.npy"
-    HIRES_ONEYEAR_FILE = NPY_DIR / "grid_hires_1yr.npy"
+    HIRES_STABILIZED_FILE = NPY_DIR / "grid_hires_stabilized_FORCAGE.npy"
+    HIRES_ONEYEAR_FILE = NPY_DIR / "grid_hires_1yr_FORCAGE.npy"
 
     # ────────────────────────────────────────────────
     # CHARGEMENT ET SURÉCHANTILLONNAGE DES DONNÉES (UPSCALE)
