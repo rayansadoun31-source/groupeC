@@ -15,11 +15,11 @@ Ce dossier contient le cœur algorithmique du quatrième modèle de simulation. 
 
 ### Visualisations Cartographiques Globales
 
-* **[`modele_planisphere_basse_res_interactif`](modele_planisphere_basse_res)** | *Application :* Script de simulation globale sans considérer l'innovation de l'atmosphère en basse résolution. Il permet de cliquer sur n'importe quel point de la planisphère pour afficher l'évolution thermique locale au cours du temps.
+* **[`modele_planisphere_basse_res`](modele_planisphere_basse_res)** | *Application :* Script de simulation globale sans considérer l'innovation de l'atmosphère en basse résolution. Il permet de cliquer sur n'importe quel point de la planisphère pour afficher l'évolution thermique locale au cours du temps.
 
-* **[`modele_planisphere_haute_res_interactif`](modele_planisphere_haute_res)** | *Application :* Script de simulation planétaire sans considérer l'innovation de l'atmosphère en haute résolution spatiale (grille interpolée fine), offrant un rendu géographique précis et un suivi interactif de l'évolution thermique par clic utilisateur.
+* **[`modele_planisphere_haute_res`](modele_planisphere_haute_res)** | *Application :* Script de simulation planétaire sans considérer l'innovation de l'atmosphère en haute résolution spatiale (grille interpolée fine), offrant un rendu géographique précis et un suivi interactif de l'évolution thermique par clic utilisateur.
 
-* **[`modele_planisphere_basse_res_avec_effet_atmosphere`](modele_planisphere_basse_res_avec_effet_atmosphere)** | *Application :* Script de simulation globale basse résolution qui intègre un forçage radiatif atmosphérique saisonnier (provenant d'un modèle atmosphérique externe).
+* **[`modele_planisphere_basse_res_avec_effet_gaz`](modele_planisphere_basse_res_avec_effet_atmosphere)** | *Application :* Script de simulation globale basse résolution qui intègre un forçage radiatif atmosphérique saisonnier (provenant d'un modèle atmosphérique externe).
 
 * **[`modele_planisphere_haute_res_avec_effet_gaz`](modele_planisphere_haute_res_avec_effet_gaz)** | *Application :* Script de simulation planétaire haute résolution qui intègre un forçage radiatif atmosphérique saisonnier (provenant d'un modèle atmosphérique externe).
 
