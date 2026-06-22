@@ -89,8 +89,8 @@ else:
 
     # --- Chemins des fichiers de résultats ---
     NPY_DIR = pathlib.Path("modele_Tsol_principal/modele4/codes python/ressources/npy")
-    LOWRES_STABILIZED_FILE = NPY_DIR / "grid_lowres_stabilized.npy"
-    LOWRES_ONEYEAR_FILE = NPY_DIR / "grid_lowres_1yr.npy"
+    LOWRES_STABILIZED_FILE = NPY_DIR / "grid_lowres_stabilized_FORCAGE.npy"
+    LOWRES_ONEYEAR_FILE = NPY_DIR / "grid_lowres_1yr_FORCAGE.npy"
 
     # ────────────────────────────────────────────────
     # CHARGEMENT DES DONNÉES GLOBALES
@@ -214,9 +214,7 @@ else:
 
         print("Interpolation du forçage atmosphérique sur la grille...")
         FORCAGE_ANNUEL = f.preparer_calendrier_forcage(NLAT, NLON, days)
-        print(f"Valeur MIN du forçage : {np.min(FORCAGE_ANNUEL):.2f} W/m²")
-        print(f"Valeur MAX du forçage : {np.max(FORCAGE_ANNUEL):.2f} W/m²")
-        print(f"Valeur MOYENNE du forçage : {np.mean(FORCAGE_ANNUEL):.2f} W/m²")
+        
 
         N_steps = int(days * 24 * 3600 / lib.dt) + 1
         T_grid = np.zeros((N_steps, NLAT, NLON))
@@ -304,7 +302,7 @@ else:
         if choice == '2':
             T_grid_all_times = run_full_simulation(730, True)
         else:
-            T_grid_all_times = run_full_simulation(10, False)
+            T_grid_all_times = run_full_simulation(365, False)
     else:
         print(f"Chargement de la matrice depuis '{target_file}'...")
         T_grid_all_times = np.load(target_file)

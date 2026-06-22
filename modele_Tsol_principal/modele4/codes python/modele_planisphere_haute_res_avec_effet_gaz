@@ -46,7 +46,7 @@ if est_modele_simplifie:
     S0 = 1361.0             
     C_CONST = 2e7           
 
-    # Création explicite des axes géographiques pour l'interface interactive
+    # Création explictie des axes géographiques pour l'interface interactive
     LAT = np.array([-90 + i * (180 / NLAT) for i in range(NLAT)])
     LON = np.array([-180 + j * (360 / NLON) for j in range(NLON)])
 
@@ -110,7 +110,7 @@ else:
 
     def upscale_grid(data_lowres, lat_low, lon_low, lat_hi, lon_hi):
         """
-        Moteur d'interpolation spatiale (Bilineaire) : Prend une matrice basse résolution 
+        Moteur d'interpolation spatiale (Bilinéaire) : Prend une matrice basse résolution 
         et l'étire mathématiquement pour remplir les "trous" de la grille haute résolution.
         """
         interp = RegularGridInterpolator(
@@ -125,7 +125,7 @@ else:
     def f_rhs(T, phinet, C, q_latent, p_cond, forcage_atm):
         """
         Cœur thermodynamique : Bilan d'énergie global de la surface terrestre.
-        Somme des flux : Solaire net - Évaporation + Effet de Serre - Émission Infrarouge + Conduction.
+        Somme des flux : Solaire net - Évaporation + Forçage Atmosphérique - Émission Infrarouge + Conduction.
         """
         return (
             phinet
@@ -164,9 +164,8 @@ else:
             jour_sim = int(t_sec // 86400) + 1
         
             # --- SYNCHRONISATION DU FORÇAGE ---
-            # On calcule quel jour on est pour extraire la bonne valeur du forçage
             jour_index = int(t_sec // 86400)
-            jour_index = min(jour_index, len(forcage_pixel) - 1) # Sécurité pour ne pas dépasser le tableau
+            jour_index = min(jour_index, len(forcage_pixel) - 1)
             forcage_actuel = forcage_pixel[jour_index]
         
             phi_n = lib.P_inc_solar(
@@ -177,12 +176,11 @@ else:
             # Échange d'énergie avec le sous-sol par diffusion
             T_sol, p_cond = f.calculer_conduction_sol(T[k], T_sol, lib.dt)
 
-            # Algorithme de Newton-Raphson pour la convergence de l'équation
+            # Algorithme de Newton-Raphson
             X = T[k]
-            q_latent_step = q_latent_smoothed[k] # Stockage pour lisibilité
+            q_latent_step = q_latent_smoothed[k]
         
             for _ in range(8):
-                # Injection de forcage_actuel ici
                 F = X - T[k] - lib.dt * f_rhs(X, phi_n, C_const, q_latent_step, p_cond, forcage_actuel)
                 dF = 1.0 - lib.dt * (-4.0 * lib.sigma * X**3 / C_const)
             
@@ -199,95 +197,12 @@ else:
         """
         print(f"Grille haute résolution définie : {NLAT_HI}x{NLON_HI} points.")
         print("Pré-calcul des paramètres sur la grille haute résolution...")
-        print("Interpolation du forçage atmosphérique sur la grille haute résolution...")
-        FORCAGE_ANNUEL = f.preparer_calendrier_forcage(NLAT_HI, NLON_HI, days)
-        for i in tqdm(range(NLAT_HI), desc="Progression (latitude)"):
-            for j in range(NLON_HI):
-                lat, lon = LAT_HI[i], LON_HI[j]
-                T0 = 288.15 - 30 * np.sin(np.radians(lat)) ** 2
-                
-                # Extraction du vecteur pour ce pixel
-                forcage_pixel = FORCAGE_ANNUEL[:, i, j]
-                
-                T_series = integrate_point_temperature(
-                    days, np.radians(lat), lon,
-                    albedo_sol_daily_grid[:, i, j],
-                    albedo_nuages_daily_grid[:, i, j],
-                    C_GRID_HI[i, j],
-                    Q_GRID_HI[i, j],
-                    forcage_pixel, # <--- IL NE FAUT PAS OUBLIER CET ARGUMENT
-                    T0
-                )
-                T_grid[:, i, j] = T_series
         
-        # --- PHASE DE VECTORISATION (Optimisation extrême) ---
-        # Interpolation spatiale de l'albédo et de l'humidité sur la nouvelle grille
-        monthly_albedo_hi = np.array([
-            upscale_grid(monthly_albedo_lowres[m], LAT_lowres, LON_lowres, LAT_HI, LON_HI)
-            for m in range(12)
-        ])
-        RZSM_GRID_hi = upscale_grid(
-            RZSM_GRID_lowres, RZSM_LAT_lowres[:-1], RZSM_LON_lowres[:-1], LAT_HI, LON_HI
-        )
-        
-        # Création des matrices de flux latent (évaporation) et de capacité thermique
-        Q_GRID_HI = np.array([[lib.P_em_surf_evap(lat, lon, verbose=False) for lon in LON_HI] for lat in LAT_HI])
-        C_GRID_HI = (f.compute_cp_from_rzsm(RZSM_GRID_hi) * 1000.0) * f.RHO_BULK * lib.EPAISSEUR_ACTIVE
-
-        # Lissage temporel Gaussien pour lisser les sauts entre chaque mois
-        albedo_sol_daily_grid = f.lisser_donnees_annuelles(monthly_albedo_hi, sigma=15.0)
-        monthly_cloud_albedo_hi = ceres_clim_lowres.sel(lat=LAT_HI, lon=LON_HI, method="nearest").to_numpy()
-        albedo_nuages_daily_grid = f.lisser_donnees_annuelles(monthly_cloud_albedo_hi, sigma=15.0)
-        print("--- Pré-calcul terminé ---")
-
-        result_file = HIRES_STABILIZED_FILE if stabilize else HIRES_ONEYEAR_FILE
-        NPY_DIR.mkdir(parents=True, exist_ok=True)
-        sim_type = "stabilisée (2 ans)" if stabilize else "rapide (1 an)"
-        print(f"\nLancement de la simulation HAUTE RÉSOLUTION {sim_type}...")
-        print(f"Les résultats seront sauvegardés dans '{result_file}'")
-
-        N_steps = int(days * 24 * 3600 / lib.dt) + 1
-        T_grid = np.zeros((N_steps, NLAT_HI, NLON_HI))
-
-        # --- BOUCLE SPATIALE PRINCIPALE ---
-        for i in tqdm(range(NLAT_HI), desc="Progression (latitude)"):
-            for j in range(NLON_HI):
-                lat, lon = LAT_HI[i], LON_HI[j]
-                T0 = 288.15 - 30 * np.sin(np.radians(lat)) ** 2
-                
-                T_series = integrate_point_temperature(
-                    days, np.radians(lat), lon,
-                    albedo_sol_daily_grid[:, i, j],
-                    albedo_nuages_daily_grid[:, i, j],
-                    C_GRID_HI[i, j],
-                    Q_GRID_HI[i, j],
-                    T0
-                )
-                T_grid[:, i, j] = T_series
-
-        if stabilize:
-            print("Simulation terminée. Extraction de la deuxième année...")
-            steps_per_year = int(365 * 24 * 3600 / lib.dt)
-            T_grid = T_grid[steps_per_year:, :, :]
-
-        print(f"Sauvegarde des résultats dans '{result_file}'...")
-        np.save(result_file, T_grid)
-        return T_grid
-    
-    def run_full_hires_simulation(days, stabilize=False):
-        """
-        Superviseur global HAUTE RÉSOLUTION : Extrapole les données basse résolution, 
-        prépare les matrices globales, et lance la boucle de calcul sur les 9800 pixels (70x140).
-        """
-        print(f"Grille haute résolution définie : {NLAT_HI}x{NLON_HI} points.")
-        print("Pré-calcul des paramètres sur la grille haute résolution...")
-        
-        # 1. GÉNÉRATION DU CALENDRIER DE FORÇAGE ATMOSPHÉRIQUE
+        # 1. GÉNÉRATION ET INTERPOLATION DU FORÇAGE ATMOSPHÉRIQUE
         print("Interpolation du forçage atmosphérique sur la grille haute résolution...")
         FORCAGE_ANNUEL = f.preparer_calendrier_forcage(NLAT_HI, NLON_HI, days)
         
         # 2. PHASE DE VECTORISATION ET D'INTERPOLATION DES DONNÉES GÉOSPATIALES
-        # Interpolation spatiale de l'albédo et de l'humidité sur la nouvelle grille
         monthly_albedo_hi = np.array([
             upscale_grid(monthly_albedo_lowres[m], LAT_lowres, LON_lowres, LAT_HI, LON_HI)
             for m in range(12)
@@ -296,11 +211,11 @@ else:
             RZSM_GRID_lowres, RZSM_LAT_lowres[:-1], RZSM_LON_lowres[:-1], LAT_HI, LON_HI
         )
         
-        # Création des matrices de flux latent (évaporation) et de capacité thermique
+        # Création des grilles globales de flux de base et d'inertie
         Q_GRID_HI = np.array([[lib.P_em_surf_evap(lat, lon, verbose=False) for lon in LON_HI] for lat in LAT_HI])
         C_GRID_HI = (f.compute_cp_from_rzsm(RZSM_GRID_hi) * 1000.0) * f.RHO_BULK * lib.EPAISSEUR_ACTIVE
 
-        # Lissage temporel Gaussien pour éliminer les sauts brutaux entre chaque mois
+        # Lissage temporel Gaussien annuel
         albedo_sol_daily_grid = f.lisser_donnees_annuelles(monthly_albedo_hi, sigma=15.0)
         monthly_cloud_albedo_hi = ceres_clim_lowres.sel(lat=LAT_HI, lon=LON_HI, method="nearest").to_numpy()
         albedo_nuages_daily_grid = f.lisser_donnees_annuelles(monthly_cloud_albedo_hi, sigma=15.0)
@@ -316,7 +231,7 @@ else:
         N_steps = int(days * 24 * 3600 / lib.dt) + 1
         T_grid = np.zeros((N_steps, NLAT_HI, NLON_HI))
 
-        # 4. UNIQUE BOUCLE SPATIALE PRINCIPALE DE CALCUL
+        # 4. UNIQUE BOUCLE SPATIALE PRINCIPALE DE CALCUL (RÉORGANISÉE)
         for i in tqdm(range(NLAT_HI), desc="Progression (latitude)"):
             for j in range(NLON_HI):
                 lat, lon = LAT_HI[i], LON_HI[j]
@@ -324,7 +239,7 @@ else:
                 
                 # Extraction du vecteur de forçage temporel pour ce pixel spécifique
                 forcage_pixel = FORCAGE_ANNUEL[:, i, j]
-                
+     
                 T_series = integrate_point_temperature(
                     days, 
                     np.radians(lat), 
@@ -348,7 +263,7 @@ else:
         return T_grid
 
     # ────────────────────────────────────────────────
-    # LOGIQUE DE CHARGEMENT
+    # LOGIQUE DE CHARGEMENT / SÉLECTION EXECUTION
     # ────────────────────────────────────────────────
     target_file = None
     run_sim = False
@@ -369,6 +284,7 @@ else:
         if choice == '2':
             T_grid_all_times = run_full_hires_simulation(730, True)
         else:
+            # Reste configuré sur 10 jours pour tes tests rapides en local
             T_grid_all_times = run_full_hires_simulation(10, False)
     else:
         print(f"Chargement de la matrice HI-RES depuis '{target_file}'...")
@@ -377,7 +293,7 @@ else:
     DT = lib.dt
 
 # ────────────────────────────────────────────────
-# 4. LE DASHBOARD INTERACTIF MATPLOTLIB
+# 5. LE DASHBOARD INTERACTIF MATPLOTLIB
 # ────────────────────────────────────────────────
 print("Génération du Dashboard interactif HAUTE RÉSOLUTION...")
 
@@ -406,7 +322,7 @@ im = ax_map.imshow(
     cmap="inferno",
     vmin=-50,
     vmax=50,
-    interpolation='bilinear' # Lissage visuel pour masquer les pixels
+    interpolation='bilinear'
 )
 
 if USE_CARTOPY:
@@ -441,7 +357,6 @@ ax_slider_hour = plt.axes([0.15, 0.05, 0.3, 0.03])
 slider_hour = Slider(ax_slider_hour, "Heure", 0, 23, valinit=0, valstep=1)
 
 def _refresh_map(val):
-    """Mise à jour cartographique pilotée par les curseurs temporels."""
     day = int(slider_day.val)
     hour = int(slider_hour.val)
     steps_per_day = int(24 * 3600 / DT)
@@ -453,7 +368,6 @@ def _refresh_map(val):
     fig.canvas.draw_idle()
 
 def on_map_click(event):
-    """Extraction et tracé de la courbe locale suite à un clic sur la matrice HAUTE RÉSOLUTION."""
     try:
         if event.inaxes != ax_map:
             return
@@ -464,17 +378,13 @@ def on_map_click(event):
             
         print(f"--> CLIC DÉTECTÉ sur la carte : Lat={lat_clic:.2f}, Lon={lon_clic:.2f}")
             
-        # 1. Recherche du pixel le plus proche sur la grille 70x140
         idx_lat = np.abs(LAT_HI - lat_clic).argmin()
-        
         lon_corrige = lon_clic if LON_HI.min() < 0 else (lon_clic + 360) % 360
         idx_lon = np.abs(LON_HI - lon_corrige).argmin()
         
-        # 2. Extraction vectorielle et conversion en Celsius
         serie_temp_k = T_grid_all_times[:, idx_lat, idx_lon]
         serie_temp_c = serie_temp_k - 273.15
         
-        # 3. Mise à jour de la courbe
         line_temp.set_data(time_axis_days, serie_temp_c)
         
         y_min, y_max = serie_temp_c.min(), serie_temp_c.max()
