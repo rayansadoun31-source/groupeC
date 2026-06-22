@@ -8,3 +8,5 @@ Afin de faciliter la navigation au sein du projet, voici les différents rapport
 * **[modèle_1_couche.pdf](modèle_1_couche.pdf)** : *Contenu :* Rapport technique explicitant les calculs physiques, les bilans de flux en régime permanent et la résolution numérique associés au premier modèle à une seule couche atmosphérique.
 
 * **[modelisation2etKcouches-1.pdf](modelisation2etKcouches-1.pdf)** : *Contenu :* Document détaillant la formulation du profil de pression, l'application de la loi de Beer-Lambert pour le modèle à deux couches, puis sa généralisation matricielle à un nombre $K$ de couches équimassiques.
+
+*  **[doc_modele_forcage_radiatif.pdf](doc_modele_forcage_radiatif.pdf)** : *Contenu :* Document présentant l’extension du modèle radiatif à \(K\) couches vers une atmosphère globale à 100 couches, intégrant plusieurs gaz à effet de serre, des données réelles de surface, un champ atmosphérique 4D et le calcul spectral du rayonnement infrarouge pour estimer le bilan radiatif net et le forçage atmosphérique.
