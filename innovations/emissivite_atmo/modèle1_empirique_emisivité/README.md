@@ -8,11 +8,11 @@ Ce dossier regroupe les scripts de calcul, les documentations et les données pe
 
 ### Documentation Technique
 * **[`Documentation_code1.pdf`](Documentation_code1.pdf)** | *Contenu :* Rapport technique explicitant la démarche physique et le fonctionnement du premier modèle à une seule couche.
-* **[`Documentation_code2.pdf`](Documentation_code2.pdf)** | *Contenu : *Rapport technique détaillant la généralisation du modèle à une structure multicouche pour simuler l'ensemble de la colonne d'air.
+* **[`Documentation_code2.pdf`](Documentation_code2.pdf)** | *Contenu :* Rapport technique détaillant la généralisation du modèle à une structure multicouche pour simuler l'ensemble de la colonne d'air.
 
-* **[`Documentation_code3.pdf`](Documentation_code3.pdf)** | *Contenu : *Rapport technique sur l'intégration des profils de concentrations réelles et variables pour les 4 gaz.
+* **[`Documentation_code3.pdf`](Documentation_code3.pdf)** | *Contenu :* Rapport technique sur l'intégration des profils de concentrations réelles et variables pour les 4 gaz.
 
-* **[`Documentation_code4.pdf`](Documentation_code4.pdf)** | *Contenu : *Rapport technique présentant la résolution spectrale fine avec des sections efficaces d'absorption dépendantes de la longueur d'onde.
+* **[`Documentation_code4.pdf`](Documentation_code4.pdf)** | *Contenu :* Rapport technique présentant la résolution spectrale fine avec des sections efficaces d'absorption dépendantes de la longueur d'onde.
 
 ### Outils de Calcul Spectral et Préparatoires
 * **[`calcul_section_efficace_CO2_CH4_H2O.py`](calcul_section_efficace_CO2_CH4_H2O.py)** | *Application :* Script Python calculant et traçant les spectres d'absorption (sections efficaces) du CO2, du CH4 et de l'H2O en fonction de la longueur d'onde.
