@@ -28,11 +28,11 @@ def charger_section_co2(
 ):
     """Télécharge les raies du CO2."""
     db_begin(str(DOSSIER_DONNEES))
-    fetch("CO2", 2, 1, nombre_onde_min, nombre_onde_max)
+    fetch("CO2_15um", 2, 1, nombre_onde_min, nombre_onde_max)
 
     """Calcule la section efficace."""
     nombres_onde, sections_cm2 = absorptionCoefficient_Voigt(
-        SourceTables="CO2",
+        SourceTables="CO2_15um",
         WavenumberRange=[nombre_onde_min, nombre_onde_max],
         WavenumberStep=pas_nombre_onde,
         Environment={"T": temperature, "p": pression_atm},
