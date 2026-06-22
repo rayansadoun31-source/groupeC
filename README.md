@@ -14,8 +14,12 @@ Ce dossier constitue le cœur de l'étude thermique au sol. Il regroupe les appr
 
 Ce dossier regroupe l'ensemble des travaux, modélisations et simulations numériques dédiés à l'étude globale du climat terrestre. Il permet d'analyser la structure verticale de l'atmosphère, de quantifier l'émissivité et l'épaisseur optique des gaz à effet de serre (via des données empiriques ou la base de données quantiques HITRAN), d'intégrer l'albédo et la réflexion du rayonnement par les nuages à partir de données météo réelles, et enfin de simuler l'impact climatique global sur la température de surface à l'aide de modèles d'atmosphère à $N$ couches.
 
+---
+
 ## 3. **[Données](https://github.com/rayansadoun31-source/groupeC/tree/main/donnees)**
+
 Ce dossier centralise les ressources du modèle atmosphérique, regroupant les données brutes de simulation (matrices de forçage mensuelles .npy et carte globale d'émissivité .tif), les tables de référence spectrales .csv issues de la base HITRAN, ainsi qu'un script Python (visualiser_rendu_atm.py) permettant d'analyser et de visualiser graphiquement les résultats.
+
 ---
 
 > **Note :** Chaque dossier principal contient sa propre documentation détaillée avec les instructions d'exécution et les rapports d'analyse associés.
