@@ -8,7 +8,7 @@ Le projet est découpé en quatre grands dossiers complémentaires :
 
 ## Structure du Projet
 
-### 1. [Températures et Concentrations Atmosphériques](./températures_et_concentrations/)
+### 1. **[Températures et Concentrations Atmosphériques](https://github.com/rayansadoun31-source/groupeC/tree/98ceb3e61d502de70a77539d03fdcb9037a558ff/innovations/temperatures_et_concentrations)**
 Ce premier dossier est dédié à l'étude de la structure verticale de l'atmosphère. Il pose les bases physiques du projet en modélisant l'évolution de la température et la répartition des profils de concentration des principaux gaz à effet de serre ($H_2O$, $CH_4$, $CO_2$, $O_3$) en fonction de l'altitude.
 
 ### 2. [Émissivité Atmosphérique](./émissivité_atmosphérique/)
