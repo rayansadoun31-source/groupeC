@@ -8,7 +8,7 @@ Ce dossier central constitue le cœur de l'étude thermique au sol. Il regroupe 
 
 ### 1. [Modèle 4 : Simulation Thermique Globale et Cartographie Interactive](./modele_4/)
 Ce sous-dossier abrite le volet algorithmique et numérique le plus avancé pour la simulation des températures au sol.
-* **Résumé du contenu :** Il rassemble les moteurs de calcul physique (flux d'énergie, rayonnement solaire, conduction, évaporation) couplés à des bases de données géographiques et météorologiques réelles. Ce modèle permet de générer des projections thermiques temporelles (évolutions heure par heure) ainsi que des visualisations cartographiques globales interactives sous forme de planisphères et de sphères 3D, en basse ou haute résolution.
+* **Résumé du contenu :** Il rassemble les moteurs de calcul physique (flux d'énergie, rayonnement solaire, conduction, évaporation) couplés à des bases de données géographiques et météorologiques réelles. Ce modèle permet de générer des projections thermiques temporelles (évolutions heure par heure) ainsi que des visualisations cartographiques globales interactives sous forme de planisphères, en basse ou haute résolution.
 
 ### 2. [Convection et Conduction : Étude des Transferts Thermiques](./convection_et_conduction/)
 Ce sous-dossier pose les fondements théoriques, physiques et mathématiques indispensables à la validation des modèles numériques du projet.

@@ -19,6 +19,8 @@ Ce dossier contient le cœur algorithmique du quatrième modèle de simulation. 
 
 * **[`modele_planisphere_haute_res_interactif`](modele_planisphere_haute_res_interactif)** | *Application :* Script de simulation planétaire avancée en haute résolution spatiale (grille interpolée fine), offrant un rendu géographique précis et un suivi interactif de l'évolution thermique par clic utilisateur.
 
+* **[`modele_tres_simplifie.py`](modele_tres_simplifie.py)** | *Application :* Squelette logiciel ultra-simplifié à vocation pédagogique. 
+
 ### Outils de Post-Traitement et Couplage
 * **[`generer_donnees_sol.py`](generer_donnees_sol.py)** | *Application :* Script d'extraction et d'ingénierie de données. Il lit la matrice thermique issue de la simulation basse résolution, calcule les moyennes journalières, étend les températures sur des carrés de 1°/1° et exporte une base de données CSV prête à être ingérée par le modèle des couches atmosphériques.
 ---
