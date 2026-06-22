@@ -8,6 +8,8 @@ Ce dossier regroupe les scripts d'acquisition, de calcul et d'intégration basé
 
 * **[`references_hitran.bib`](references_hitran.bib)** | *Contenu :* Fichier de bibliographie BibTeX contenant les références d'articles scientifiques officiels pour la base de données HITRAN et l'interface Python HAPI.
 
+### Documentation 
+* **[`documentation_1_section_efficace_CO2.pdf`](documentation_1_section_efficace_CO2.pdf)** | *Contenu :* présente un script Python [`1_section_efficace_CO2_15um.py`](1_section_efficace_C02_15um.py) qui utilise la bibliothèque HAPI et la base spectroscopique HITRAN pour calculer et tracer la section efficace d'absorption du CO2​ autour de 15 μm
 ### Scripts d'Acquisition et Calcul Spectral
 * **[`1_section_efficace_CO2_15um.py`](1_section_efficace_CO2_15um.py)** | *Application :* Script Python téléchargeant les données de la base HITRAN et calculant la section efficace d'absorption réelle du CO2 autour de sa bande principale à 15 µm.
 
