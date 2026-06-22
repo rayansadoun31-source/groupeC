@@ -4,7 +4,7 @@ Ce dépôt rassemble les outils de modélisation, de simulation numérique et d'
 
 ---
 
-## 1. Modèle de Température du Sol Principal (`modele_Tsol_principal`)
+## 1. Modèle de Température du Sol Principal **[modele_Tsol_principal](https://github.com/rayansadoun31-source/groupeC/tree/aa3bf43b5cd8a6b7cbe0ac0e3ccbc495b7583dd5/modele_Tsol_principal)**
 
 Ce dossier constitue le cœur de l'étude thermique au sol. Il regroupe les approches numériques et théoriques développées pour simuler et valider l'évolution des températures de surface ainsi que les flux d'énergie terrestres. Il permet à la fois de générer des projections thermiques temporelles (courbes heure par heure), de visualiser des cartographies mondiales interactives (2D et 3D), et de consulter les rapports scientifiques validant la physique du modèle (notamment sur la conduction et la convection).
 
