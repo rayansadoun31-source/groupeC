@@ -21,5 +21,5 @@ Ces fichiers stockent les données vectorielles et les calculs de forçage atmos
 * **[longueurs_onde.csv](https://github.com/rayansadoun31-source/groupeC/blob/29de3dae707b782ee209fe97ac537b97f425532c/donnees/longueurs_onde.csv)** : Tableau listant les différentes longueurs d'onde (en µm) de la grille spectrale utilisées comme références pour les modélisations.
 * **[table_emissivite_hitran_4_100um_0_100km.csv](https://github.com/rayansadoun31-source/groupeC/blob/29de3dae707b782ee209fe97ac537b97f425532c/donnees/table_emissivite_hitran_4_100um_0_100km.csv)** : Tableau de résultats exhaustif regroupant les émissivités pré-calculées avec la base HITRAN, couvrant une bande spectrale de 4 à 100 µm sur des tranches d'altitude de 0 à 100 km.
 
-### 🖥️ Scripts et Outils
+### Scripts et Outils
 * **[visualiser_rendu_atm.py](https://github.com/rayansadoun31-source/groupeC/blob/29de3dae707b782ee209fe97ac537b97f425532c/donnees/visualiser_rendu_atm.py)** : Script Python dédié au traitement, à l'extraction et à la visualisation graphique des rendus atmosphériques issus des matrices `.npy`.
