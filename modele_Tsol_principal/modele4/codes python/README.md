@@ -15,17 +15,6 @@ Ce dossier contient le cœur algorithmique du quatrième modèle de simulation. 
 
 ### Visualisations Cartographiques Globales
 
-* **[`modele_tres_simplifie.py`](modele_tres_simplifie.py)** | *Application :* Squelette logiciel ultra-simplifié à vocation pédagogique pour comprendre le fonctionnement des modèles finis.
-
-* **[`modele_planisphere_basse_res.py`](modele_planisphere_basse_res.py)** | *Application :* Simulation et affichage d'une carte mondiale (planisphère) des températures de surface en basse résolution, avec choix entre un modèle simplifié ou un modèle complet nourri par des données géospatiales.
-
-* **[`modele_planisphere_haute_res.py`](modele_planisphere_haute_res.py)** | *Application :* Simulation et affichage d'une carte mondiale (planisphère) des températures de surface en haute résolution, avec choix entre un modèle simplifié ou un modèle complet nourri par des données géospatiales.
-
-* **[`modele_sphere_basse_res.py`](modele_sphere_basse_res.py)** | *Application :* Simulation et affichage tridimensionnel d'une carte mondiale (sphère) des températures de surface en basse résolution.
-
-* **[`modele_sphere_haute_res.py`](modele_sphere_haute_res.py)** | *Application :* Simulation et affichage tridimensionnel d'une carte mondiale (sphère) des températures de surface en haute résolution.
-
-### Versions Interactives Avancées
 * **[`modele_planisphere_basse_res_interactif`](modele_planisphere_basse_res_interactif)** | *Application :* Script de simulation globale interactive en basse résolution. Il permet de cliquer sur n'importe quel point de la planisphère pour afficher l'évolution thermique locale au cours du temps.
 
 * **[`modele_planisphere_haute_res_interactif`](modele_planisphere_haute_res_interactif)** | *Application :* Script de simulation planétaire avancée en haute résolution spatiale (grille interpolée fine), offrant un rendu géographique précis et un suivi interactif de l'évolution thermique par clic utilisateur.
@@ -35,4 +24,4 @@ Ce dossier contient le cœur algorithmique du quatrième modèle de simulation. 
 ---
 
 ## Utilisation
-Pour une analyse locale, utilisez `modele_courbe.py`. Pour des rendus visuels globaux, choisissez le script de planisphère ou de sphère correspondant à la résolution et au niveau d'interactivité souhaités. Les fichiers `fonctions.py` et `lib.py` doivent impérativement rester dans le même répertoire pour assurer le bon fonctionnement des simulations.
+Pour une analyse locale, utilisez `modele_courbe.py`. Pour des rendus visuels globaux, choisissez le script de planisphère correspondant à la résolution. Les fichiers `fonctions.py` et `lib.py` doivent impérativement rester dans le même répertoire pour assurer le bon fonctionnement des simulations.
