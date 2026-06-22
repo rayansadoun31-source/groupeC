@@ -11,7 +11,7 @@ Le projet est découpé en quatre grands dossiers complémentaires :
 ### 1. **[Températures et Concentrations Atmosphériques](https://github.com/rayansadoun31-source/groupeC/tree/98ceb3e61d502de70a77539d03fdcb9037a558ff/innovations/temperatures_et_concentrations)**
 Ce premier dossier est dédié à l'étude de la structure verticale de l'atmosphère. Il pose les bases physiques du projet en modélisant l'évolution de la température et la répartition des profils de concentration des principaux gaz à effet de serre ($H_2O$, $CH_4$, $CO_2$, $O_3$) en fonction de l'altitude.
 
-### 2. [Émissivité Atmosphérique](./émissivité_atmosphérique/)
+### 2. **[Émissivité Atmosphérique](https://github.com/rayansadoun31-source/groupeC/tree/6230a36e07cccac9a01ea89440c094b058b40177/innovations/emissivite_atmo)**
 Ce dossier central est consacré à l'étude quantitative de l'épaisseur optique et de l'émissivité de l'atmosphère terrestre. Il explore et compare deux approches numériques : une méthode empirique basée sur des approximations de spectres d'absorption, et une méthode haute résolution s'appuyant sur les données quantiques officielles de la base internationale HITRAN.
 
 ### 3. [Modélisation de la Couche Atmosphérique](./modélisation_couche_atmo/)
