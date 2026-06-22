@@ -36,4 +36,4 @@ Ce dossier regroupe les scripts de calcul, les documentations et les données pe
 ---
 
 ## Utilisation
-La progression logique du projet suit l'ordre des codes (de 1 à 4). Le script de génération de tableau s'appuie sur le modèle le plus avancé (`code4_emissivite_avec_section_eff`) pour exporter les résultats numériques exploitables au format CSV.
+La progression logique du projet suit l'ordre des codes (de 1 à 4). Le script de génération de tableau s'appuie sur le modèle le plus avancé (`code4_emissivite_avec_section_eff.py`) pour exporter les résultats numériques exploitables au format CSV.
