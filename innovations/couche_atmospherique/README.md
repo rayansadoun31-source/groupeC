@@ -14,7 +14,7 @@ Ce dossier rassemble les documents d'étude et les scripts de simulation numéri
 ### Scripts de Simulation Numérique (Python)
 * **[atmosphere_1_couche_tropausphere_8km.py](https://github.com/rayansadoun31-source/groupeC/blob/1522dc722c16e8cda4e66f158d191720cccb06ed/innovations/couche_atmospherique/Codes/atmosphere_1_couche_tropausphere_8km.py)** | *Application :* Simulation de l'équilibre radiatif de la Terre avec une couche atmosphérique globale simple.
 
-* **[`atmosphere_2_couche_tropausphere_8km.py`](atmosphere_2_couche_tropausphere_8km.py)** | *Application :* Calcul de l'impact de la concentration de CO2 sur la température de surface en divisant l'atmosphère en deux couches de masses égales.
+* **[atmosphere_2_couche_tropausphere_8km.py](https://github.com/rayansadoun31-source/groupeC/blob/f279e82fc1263120dde300f40db239ca98f1a593/innovations/couche_atmospherique/Codes/atmosphere_2_couche_tropausphere_8km.py)** | *Application :* Calcul de l'impact de la concentration de CO2 sur la température de surface en divisant l'atmosphère en deux couches de masses égales.
 
 * **[`atmosphere_n_couches_1013hpa_a_0hpa.py`](atmosphere_n_couches_1013hpa_a_0hpa.py)** | *Application :* Code de simulation le plus avancé, permettant de découper l'atmosphère en un nombre arbitraire de couches (N-couches) pour une résolution numérique plus précise.
 
