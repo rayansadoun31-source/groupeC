@@ -1,0 +1,491 @@
+\documentclass[11pt,a4paper]{article}
+
+% Compilation conseillée : pdflatex documentation_generale_modele_hitran.tex
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage[version=4]{mhchem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+
+\geometry{top=2.35cm,bottom=2.35cm,left=2.45cm,right=2.45cm}
+\sisetup{locale=FR,per-mode=symbol}
+\DeclareSIUnit\ppm{ppm}
+\DeclareSIUnit\atm{atm}
+\DeclareSIUnit\molecule{molécule}
+
+\definecolor{bleuCAPECL}{RGB}{17,67,104}
+\definecolor{bleupale}{RGB}{234,243,250}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=bleuCAPECL,
+  urlcolor=blue!60!black,
+  pdftitle={Documentation générale du modèle spectral d'émissivité fondé sur HITRAN}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{CAPECL -- Projet climat 2026}
+\rhead{Modèle HITRAN}
+\cfoot{\thepage}
+\setlength{\headheight}{14pt}
+
+\newcommand{\HITRAN}{\textsc{Hitran}}
+\newcommand{\HAPI}{\textsc{Hapi}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\important}[1]{%
+  \par\medskip
+  \noindent\fcolorbox{bleuCAPECL}{bleupale}{%
+    \parbox{0.94\linewidth}{#1}}%
+  \par\medskip
+}
+
+\title{\vspace{2.2cm}
+  {\color{bleuCAPECL}\LARGE\bfseries Modèle spectral d'émissivité\\[0.25em]
+  atmosphérique fondé sur \HITRAN}\par\vspace{0.8cm}
+  {\large Documentation générale du modèle}}
+\author{Projet climat 2026\\Groupe C -- Geckoquins}
+\date{Juin 2026}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\vfill
+\begin{center}
+\begin{minipage}{0.78\textwidth}
+\small
+Cette documentation complète les programmes du dossier
+\code{modèle2\_hitran\_emissivité}. Elle expose la construction physique du
+modèle, le rôle des données spectroscopiques et les précautions nécessaires à
+l'interprétation des résultats. Elle n'est pas une explication ligne par
+ligne du code.
+\end{minipage}
+\end{center}
+\vfill
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Pourquoi un second modèle ?}
+
+Le premier modèle représente chaque bande d'absorption par quelques pics
+lisses. Cette construction permet de vérifier rapidement les ordres de
+grandeur, mais elle efface la structure spectrale réelle et ne fait pas varier
+les sections efficaces avec la pression et la température.
+
+Le second modèle conserve l'atmosphère discrétisée et la loi de
+Beer--Lambert, mais remplace les pics calibrés manuellement par des spectres
+calculés raie par raie à partir de
+\href{https://hitran.org/}{HITRANonline}. L'interface Python
+\href{https://hitran.org/hapi/}{HAPI} assure l'accès aux données et le calcul
+spectral.
+
+Le contexte physique général est celui du
+\href{https://science.nasa.gov/earth/earth-observatory/climate-and-earths-energy-budget/}{bilan
+énergétique terrestre décrit par la NASA} : la vapeur d'eau, le dioxyde de
+carbone, le méthane, l'ozone et d'autres gaz absorbent certaines longueurs
+d'onde du rayonnement thermique. Le présent modèle calcule l'absorption d'une
+couche, pas le bilan radiatif complet de la planète.
+
+\section{Grandeur calculée et domaine}
+
+Le résultat principal est l'absorptivité spectrale d'une couche homogène :
+
+\begin{equation}
+  \alpha(\lambda,z)=1-\exp[-\tau_{\mathrm{tot}}(\lambda,z)].
+\end{equation}
+
+Dans les fichiers, cette grandeur est appelée \code{emissivite}. L'égalité
+entre absorptivité et émissivité est une application de la loi de Kirchhoff en
+équilibre thermodynamique local. Elle ne transforme pas le résultat en flux
+émis : un flux demanderait la fonction de Planck et la propagation du
+rayonnement dans toute la colonne.
+
+Le tableau actuel couvre :
+
+\begin{itemize}[itemsep=2pt]
+  \item quatre absorbeurs : \ce{H2O}, \ce{CO2}, \ce{O3} et \ce{CH4} ;
+  \item les longueurs d'onde de 4 à \SI{100}{\micro\metre} ;
+  \item les altitudes de 0 à \SI{100}{\kilo\metre} ;
+  \item des couches verticales de \SI{1}{\kilo\metre} ;
+  \item un pas de sortie de \SI{0.1}{\micro\metre} et un pas interne de
+        \SI{0.05}{\per\centi\metre}.
+\end{itemize}
+
+La chaîne de modélisation est
+
+\begin{equation*}
+\boxed{\text{paramètres de raies \HITRAN}}
+\longrightarrow
+\boxed{\sigma_g(\widetilde\nu,T,P)}
+\longrightarrow
+\boxed{n_g(z)}
+\longrightarrow
+\boxed{\tau_g(\lambda,z)}
+\longrightarrow
+\boxed{\alpha(\lambda,z)}.
+\end{equation*}
+
+\section{Atmosphère discrétisée}
+
+\subsection{Hypothèses de couche}
+
+Chaque couche est considérée plane, homogène et isotherme sur le trajet
+radiatif. La pression, la température, les fractions molaires et les sections
+efficaces calculées à ces conditions sont constantes sur $\Delta z$.
+
+La propagation est verticale et sans diffusion. Les nuages, les aérosols, la
+réfraction et la courbure terrestre sont absents. Les quatre gaz sont traités
+comme des absorbeurs indépendants dont les épaisseurs optiques s'additionnent.
+
+\subsection{Température et pression}
+
+Le profil externe emploie une atmosphère standard simplifiée, affine par
+morceaux. Dans une zone de gradient $\gamma$ constant,
+
+\begin{align}
+  T(z)&=T_0+\gamma(z-z_0),\\
+  P(z)&=P_0\left(\frac{T(z)}{T_0}\right)^{-gM/(R\gamma)}
+  \quad (\gamma\neq0),
+\end{align}
+
+et dans une zone isotherme,
+
+\begin{equation}
+  P(z)=P_0\exp\!\left[-\frac{gM(z-z_0)}{RT_0}\right].
+\end{equation}
+
+Cette construction s'inspire de la
+\href{https://www.ngdc.noaa.gov/stp/space-weather/online-publications/miscellaneous/us-standard-atmosphere-1976/us-standard-atmosphere_st76-1562_noaa.pdf}{U.S.
+Standard Atmosphere 1976}, mais elle n'en est pas une reproduction. La
+stratopause est simplifiée et le gradient au-dessus de
+\SI{85}{\kilo\metre} est propre au projet.
+
+\subsection{Profils de gaz}
+
+Les fractions molaires $x_g=C_g\times10^{-6}$ proviennent de profils
+paramétriques :
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{>{\bfseries}l p{0.70\linewidth}}
+\toprule
+Gaz & Profil de mélange utilisé \\
+\midrule
+\ce{CO2} & \SI{425}{\ppm} jusqu'à \SI{85}{\kilo\metre}, puis décroissance
+exponentielle de hauteur caractéristique \SI{10}{\kilo\metre}. \\
+\ce{CH4} & \SI{1.9}{\ppm} jusqu'à \SI{11}{\kilo\metre}, puis décroissance
+exponentielle de hauteur caractéristique \SI{25}{\kilo\metre}. \\
+\ce{O3} & Fond de \SI{0.1}{\ppm}; pic gaussien entre 15 et
+\SI{35}{\kilo\metre}, centré à \SI{25}{\kilo\metre} et de maximum
+\SI{8}{\ppm}. \\
+\ce{H2O} & Pression de vapeur saturante approchée par la formule de Magnus et
+humidité relative décroissante dans la troposphère; plancher de
+\SI{4}{\ppm} au-dessus. \\
+\bottomrule
+\end{tabular}
+\caption{Paramétrisation des profils verticaux.}
+\end{table}
+
+Ces profils ne sont pas des observations météorologiques instantanées. Les
+valeurs de référence de \ce{CO2} et \ce{CH4} peuvent être comparées aux
+séries du
+\href{https://gml.noaa.gov/ccgg/}{Global Greenhouse Gas Reference Network de
+la NOAA}. Leur fonction ici est de définir une atmosphère de test cohérente.
+
+\section{Données spectroscopiques HITRAN}
+
+\subsection{Contenu de la base}
+
+HITRAN fournit, pour chaque transition moléculaire, la position de la raie,
+son intensité de référence, l'énergie de l'état inférieur, les paramètres
+d'élargissement et de déplacement collisionnels ainsi que les informations
+isotopologiques. Les définitions et les unités sont rassemblées sur la page
+\href{https://hitran.org/docs/definitions-and-units/}{HITRANonline --
+Definitions and units}.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lccc}
+\toprule
+Molécule & Identifiant HITRAN & Isotopologue & Nom local \\
+\midrule
+\ce{H2O} & 1 & 1 & \code{H2O} \\
+\ce{CO2} & 2 & 1 & \code{CO2} \\
+\ce{O3}  & 3 & 1 & \code{O3} \\
+\ce{CH4} & 6 & 1 & \code{CH4} \\
+\bottomrule
+\end{tabular}
+\caption{Espèces spectroscopiques retenues. L'identifiant isotopologique 1
+désigne l'isotopologue terrestre le plus abondant de la molécule.}
+\end{table}
+
+Seul l'isotopologue principal de chaque gaz est inclus. Le dossier
+\code{donnees\_hitran} constitue un cache local des tables téléchargées. Sa
+présence évite une nouvelle requête, mais ne certifie ni l'édition de la base,
+ni la date d'acquisition, ni la couverture exacte de chaque fichier.
+
+\subsection{Longueur d'onde et nombre d'onde}
+
+HAPI travaille en nombre d'onde $\widetilde\nu$, en
+\si{\per\centi\metre}. Pour $\lambda$ exprimée en mètres,
+
+\begin{equation}
+  \widetilde\nu\;(\si{\per\centi\metre})=
+  \frac{1}{100\,\lambda\;(\si{\metre})}.
+\end{equation}
+
+Ainsi, l'intervalle de 4 à \SI{100}{\micro\metre} correspond à 2500--
+\SI{100}{\per\centi\metre}. Le calcul interne est effectué sur une grille
+uniforme en nombre d'onde.
+
+\subsection{Profil de Voigt}
+
+Chaque raie est représentée par un profil de Voigt, convolution d'un profil
+gaussien et d'un profil lorentzien. Schématiquement,
+
+\begin{equation}
+  \sigma_g(\widetilde\nu,T,P)=
+  \sum_{j\in g}S_j(T)
+  V\!\left(\widetilde\nu-\widetilde\nu_j;
+  \gamma_{D,j}(T),\gamma_{L,j}(T,P)\right).
+\end{equation}
+
+Le terme gaussien représente l'élargissement Doppler dû au mouvement
+thermique. Le terme lorentzien représente principalement l'élargissement par
+collisions et dépend de la pression et du gaz perturbateur. Le détail des
+paramètres est donné dans la documentation HITRAN et dans le
+\href{https://hitran.org/static/hapi/hapi_manual.pdf}{manuel officiel de
+HAPI}.
+
+Avec l'option d'unités HITRAN, la sortie est une section efficace en
+\si{\centi\metre\squared\per\molecule}. Le modèle applique
+
+\begin{equation}
+  \sigma_g\;(\si{\metre\squared\per\molecule})=
+  10^{-4}\sigma_g\;(\si{\centi\metre\squared\per\molecule}).
+\end{equation}
+
+La pression locale est convertie en atmosphères avant le calcul :
+
+\begin{equation}
+  P_{\mathrm{atm}}=\frac{P_{\mathrm{Pa}}}{101325}.
+\end{equation}
+
+\section{De la section efficace à l'absorptivité}
+
+La densité moléculaire totale de l'air est
+
+\begin{equation}
+  n_{\mathrm{air}}(z)=\frac{P(z)}{k_{\mathrm B}T(z)},
+  \qquad
+  k_{\mathrm B}=\SI{1.380649e-23}{\joule\per\kelvin},
+\end{equation}
+
+où la valeur exacte de $k_{\mathrm B}$ est documentée par le
+\href{https://www.nist.gov/si-redefinition/kelvin/kelvin-boltzmann-constant}{NIST}.
+Pour le gaz $g$,
+
+\begin{equation}
+  n_g(z)=x_g(z)n_{\mathrm{air}}(z).
+\end{equation}
+
+L'épaisseur optique d'une couche homogène vaut
+
+\begin{equation}
+  \tau_g(\lambda,z)=
+  \sigma_g(\lambda,T(z),P(z))\,n_g(z)\,\Delta z.
+\end{equation}
+
+Les contributions sont additionnées,
+
+\begin{equation}
+  \tau_{\mathrm{tot}}=
+  \tau_{\ce{CO2}}+\tau_{\ce{H2O}}+\tau_{\ce{CH4}}+\tau_{\ce{O3}},
+\end{equation}
+
+puis Beer--Lambert donne
+
+\begin{equation}
+  \mathcal T_\lambda=\exp(-\tau_{\mathrm{tot}}),
+  \qquad
+  \boxed{\alpha_\lambda=1-\exp(-\tau_{\mathrm{tot}})}.
+\end{equation}
+
+L'épaisseur optique est sans dimension. La formulation HITRAN équivalente,
+fondée sur la densité de colonne $u=\int n_g\,\mathrm dl$, est présentée dans
+la page
+\href{https://hitran.org/docs/definitions-and-units/}{Definitions and units}.
+
+\section{Résolution spectrale et interpolation}
+
+Le spectre HAPI est calculé par pas de
+\SI{0.05}{\per\centi\metre}. Il est ensuite interpolé aux nombres d'onde
+correspondant à une grille de sortie uniforme en longueur d'onde, par pas de
+\SI{0.1}{\micro\metre}.
+
+Une grille uniforme en $\lambda$ n'est pas uniforme en $\widetilde\nu$ :
+
+\begin{equation}
+  \left|\frac{\mathrm d\widetilde\nu}{\mathrm d\lambda}\right|
+  \propto\frac{1}{\lambda^2}.
+\end{equation}
+
+La résolution effective du CSV varie donc avec la longueur d'onde. Une simple
+interpolation ponctuelle peut manquer des raies plus étroites que le pas de
+sortie. Pour un calcul de flux ou une comparaison instrumentale, il est
+préférable d'intégrer la transmission sur chaque bande spectrale plutôt que
+d'échantillonner uniquement son centre.
+
+\section{Lecture du tableau final}
+
+La table \code{table\_emissivite\_hitran\_4\_100um\_0\_100km.csv} contient
+\num{97061} lignes de données : 101 altitudes et 961 longueurs d'onde. Une
+ligne contient les coordonnées spectrales et verticales, la pression, la
+température, les concentrations, les quatre sections efficaces, les quatre
+épaisseurs optiques partielles et l'absorptivité appelée \code{emissivite}.
+
+L'épaisseur optique totale n'est pas enregistrée directement, mais se
+reconstruit par
+
+\begin{equation}
+  \tau_{\mathrm{tot}}=\sum_g\tau_g
+  =-\ln(1-\alpha),\qquad \alpha<1.
+\end{equation}
+
+\important{\textbf{Table à régénérer avant usage quantitatif.} Le CSV présent
+dans le dossier contient encore \SI{425}{\ppm} de \ce{CO2} à
+\SI{100}{\kilo\metre}, tandis que le profil actuel impose une décroissance
+au-dessus de \SI{85}{\kilo\metre} et donne environ \SI{94.83}{\ppm} à
+\SI{100}{\kilo\metre}. Le fichier et le profil source ne correspondent donc
+plus exactement.}
+
+Une ligne décrit une couche isolée. Le rayonnement sortant d'une colonne exige
+d'ordonner les couches, d'atténuer l'émission de chacune par les couches
+supérieures et d'employer sa température dans la fonction de Planck.
+
+\section{Apport par rapport au modèle empirique}
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{p{0.24\linewidth}p{0.32\linewidth}p{0.34\linewidth}}
+\toprule
+Aspect & Modèle empirique & Modèle HITRAN \\
+\midrule
+Spectre & Quelques enveloppes exponentielles & Transitions moléculaires raie
+par raie \\
+Dépendance en $P,T$ & Absente & Incluse dans le calcul Voigt \\
+Traçabilité & Paramètres internes non sourcés & Base et publications HITRAN \\
+Coût numérique & Faible & Élevé \\
+Usage naturel & Compréhension et tests & Calcul spectral plus réaliste \\
+Limite commune & Absorptivité d'une couche, pas un flux radiatif complet &
+Absorptivité d'une couche, pas un flux radiatif complet \\
+\bottomrule
+\end{tabular}
+\caption{Positionnement des deux modèles.}
+\end{table}
+
+Les figures du dossier \code{comparaison\_modeles\_sections\_efficaces}
+montrent que l'enveloppe empirique peut localiser une grande bande, mais ne
+reproduit ni la multitude des raies, ni toutes les bandes faibles, ni leurs
+ailes spectrales. Elles constituent une validation qualitative, pas une
+validation radiométrique du modèle complet.
+
+\section{Limites du modèle}
+
+Le recours à HITRAN améliore fortement la représentation spectrale, mais ne
+transforme pas le calcul en modèle climatique complet. Les limites
+principales sont :
+
+\begin{itemize}[itemsep=2pt]
+  \item un seul isotopologue par gaz ;
+  \item un profil de Voigt avec les choix de diluant et de coupure de HAPI ;
+  \item l'absence des continua, notamment celui de la vapeur d'eau, et des
+        absorptions induites par collision ;
+  \item des profils atmosphériques idéalisés, surtout au-dessus de
+        \SI{85}{\kilo\metre} ;
+  \item l'absence de nuages, d'aérosols et de diffusion ;
+  \item des couches planes et homogènes et un trajet uniquement vertical ;
+  \item une table de sortie trop peu résolue pour conserver toutes les raies ;
+  \item l'absence de fonction de Planck, de flux montant et descendant et de
+        bilan énergétique ;
+  \item un cache local qui ne mémorise pas explicitement l'édition HITRAN et
+        la date de téléchargement.
+\end{itemize}
+
+Les améliorations prioritaires sont la régénération du CSV avec le profil
+actuel, l'export de $\tau_{\mathrm{tot}}$, l'étude de convergence spectrale et
+l'ajout d'un véritable transfert radiatif multicouche.
+
+\section{Reproductibilité et correspondance avec les fichiers}
+
+L'environnement Python est décrit par \code{requirements.txt}. Au premier
+téléchargement, HAPI demande un accès à HITRANonline et peut nécessiter une
+clé d'API. Pour rendre un résultat reproductible, il faut archiver avec le
+CSV :
+
+\begin{itemize}[itemsep=2pt]
+  \item la version de HAPI ;
+  \item l'édition ou la date d'accès à HITRAN ;
+  \item la plage et le pas en nombre d'onde ;
+  \item les isotopologues choisis ;
+  \item la version du profil atmosphérique ;
+  \item l'épaisseur et l'altitude représentative des couches.
+\end{itemize}
+
+La carte d'accès scientifique aux fichiers est :
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{p{0.45\linewidth}p{0.47\linewidth}}
+\toprule
+Fichier & Objet scientifique associé \\
+\midrule
+\code{1\_section\_efficace\_CO2\_15um.py} & Prototype autour de la bande de
+\ce{CO2} à \SI{15}{\micro\metre}. \\
+\code{2\_sections\_efficaces\_gaz\_hitran.py} & Acquisition des raies et
+construction des quatre spectres Voigt. \\
+\code{code\_final\_emissivite\_avec\_sections\_hitran.py} & Couplage des
+spectres aux profils verticaux et à Beer--Lambert. \\
+\code{generer\_table\_emissivite\_hitran.py} & Échantillonnage altitude--
+longueur d'onde et export du CSV. \\
+\code{donnees\_hitran/} & Tables locales lues par HAPI. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Sources et ressources}
+
+\begin{itemize}[leftmargin=*,itemsep=3pt]
+  \item \href{https://science.nasa.gov/earth/earth-observatory/climate-and-earths-energy-budget/}{NASA Earth Observatory -- Climate and Earth's Energy Budget} ;
+  \item \href{https://www.ngdc.noaa.gov/stp/space-weather/online-publications/miscellaneous/us-standard-atmosphere-1976/us-standard-atmosphere_st76-1562_noaa.pdf}{NASA/NOAA -- U.S. Standard Atmosphere 1976} ;
+  \item \href{https://gml.noaa.gov/ccgg/}{NOAA Global Monitoring Laboratory -- Carbon Cycle Greenhouse Gases} ;
+  \item \href{https://www.nist.gov/si-redefinition/kelvin/kelvin-boltzmann-constant}{NIST -- Boltzmann constant and the kelvin} ;
+  \item \href{https://hitran.org/docs/}{HITRANonline -- documentation générale} ;
+  \item \href{https://hitran.org/docs/definitions-and-units/}{HITRANonline -- Definitions and units} ;
+  \item \href{https://hitran.org/hapi/}{HAPI -- page officielle} et
+        \href{https://hitran.org/static/hapi/hapi_manual.pdf}{manuel utilisateur} ;
+  \item I.~E. Gordon et al.,
+        \href{https://doi.org/10.1016/j.jqsrt.2021.107949}{The HITRAN2020 Molecular Spectroscopic Database}, 2022 ;
+  \item R.~V. Kochanov et al.,
+        \href{https://doi.org/10.1016/j.jqsrt.2016.03.005}{HITRAN Application Programming Interface (HAPI)}, 2016 ;
+  \item O.~A. Alduchov et R.~E. Eskridge,
+        \href{https://doi.org/10.1175/1520-0450(1996)035\%3C0601:imfaos\%3E2.0.co;2}{Improved Magnus Form Approximation of Saturation Vapor Pressure}, 1996.
+\end{itemize}
+
+\end{document}
