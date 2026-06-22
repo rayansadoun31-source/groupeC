@@ -14,8 +14,8 @@ Ces fichiers stockent les données vectorielles et les calculs de forçage atmos
 
 ### Tables de Données et Spectres (Fichiers CSV)
 * **[longueurs_onde.csv](https://github.com/rayansadoun31-source/groupeC/blob/29de3dae707b782ee209fe97ac537b97f425532c/donnees/longueurs_onde.csv)** : Tableau listant les différentes longueurs d'onde (en µm) de la grille spectrale utilisées comme références pour les modélisations.
-> **⚠️ ATTENTION** pour le fichier qui suit, le fichier dans le github est vide. Il faut récupérer ce fichier via la plateforme de tranfert de fichier de gros volume de Centrale Lyon.
 * **[table_emissivite_hitran_4_100um_0_100km.csv](https://github.com/rayansadoun31-source/groupeC/blob/29de3dae707b782ee209fe97ac537b97f425532c/donnees/table_emissivite_hitran_4_100um_0_100km.csv)** : Tableau de résultats exhaustif regroupant les émissivités pré-calculées avec la base HITRAN, couvrant une bande spectrale de 4 à 100 µm sur des tranches d'altitude de 0 à 100 km.
+> **⚠️ ATTENTION** pour le fichier qui suit, le fichier dans le github est vide. Il faut récupérer ce fichier via la plateforme de tranfert de fichier de gros volume de Centrale Lyon.
 * **[temperatures_sol_degre_par_degre.csv](https://github.com/rayansadoun31-source/groupeC/blob/8acc1f6a3790d7774b216590130f2ca88d34796b/donnees/temperatures_sol_degre_par_degre.csv)** : Tableau recensant les températures de surface de la Terre avec un maillage spatial d'une précision de un degré par un degré.
 
 ### Scripts et Outils
