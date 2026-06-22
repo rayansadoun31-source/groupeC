@@ -30,4 +30,4 @@ Pour naviguer efficacement dans ce projet, il est recommandé de suivre cette d�
 3. Intégrer la réflexion du rayonnement solaire par les nuages (**Albédo Atmosphérique**)[cite: 4].
 4. Observer l'impact climatique global à travers les simulations radiatives (**Modélisation de la Couche Atmosphérique**).
 
-*Note : Pour le détail des scripts, des rapports physiques et des instructions d'exécution, veuillez vous
+*Note : Pour le détail des scripts, des rapports physiques et des instructions d'exécution, veuillez vous référer au fichier `README.md` spécifique présent à l'intérieur de chaque dossier.*
