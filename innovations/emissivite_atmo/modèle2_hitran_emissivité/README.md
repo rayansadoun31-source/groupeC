@@ -9,7 +9,8 @@ Ce dossier regroupe les scripts d'acquisition, de calcul et d'intégration basé
 * **[`references_hitran.bib`](references_hitran.bib)** | *Contenu :* Fichier de bibliographie BibTeX contenant les références d'articles scientifiques officiels pour la base de données HITRAN et l'interface Python HAPI.
 
 ### Documentation 
-* **[`documentation_1_section_efficace_CO2.pdf`](documentation_1_section_efficace_CO2.pdf)** | *Contenu :* présente le script Python [`1_section_efficace_CO2_15um.py`](1_section_efficace_C02_15um.py) qui utilise la bibliothèque HAPI et la base spectroscopique HITRAN pour calculer et tracer la section efficace d'absorption du CO2​ autour de 15 μm
+* **[`documentation_1_section_efficace_CO2.pdf`](documentation_1_section_efficace_CO2.pdf)** | *Contenu :* présente le script Python [`1_section_efficace_CO2_15um.py`](1_section_efficace_C02_15um.py) qui utilise la bibliothèque HAPI et la base spectroscopique HITRAN pour calculer et tracer la section efficace d'absorption du CO2​ autour de 15 μm.
+*  **[`documentation_2_sections_efficaces_gaz_hitran.pdf`](documentation_2_sections_efficaces_gaz_hitran.pdf)** | *Contenu :* Ce projet contient un script Python réutilisable [`2_sections_efficaces_gaz_hitran.py`](2_sections_efficaces_gaz_hitran.py) permettant de calculer et de comparer les sections efficaces d'absorption de quatre gaz à effet de serre majeurs (H2​O, CO2, O3​ et CH4​) dans le domaine de l'infrarouge thermique ($4$ aˋ $100$ μm) à partir de la base HITRAN.
 * 
 ### Scripts d'Acquisition et Calcul Spectral
 * **[`1_section_efficace_CO2_15um.py`](1_section_efficace_CO2_15um.py)** | *Application :* Script Python téléchargeant les données de la base HITRAN et calculant la section efficace d'absorption réelle du CO2 autour de sa bande principale à 15 µm.
