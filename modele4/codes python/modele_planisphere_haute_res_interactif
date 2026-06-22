@@ -46,11 +46,12 @@ if est_modele_simplifie:
     S0 = 1361.0             
     C_CONST = 2e7           
 
-    # Création explicite des tableaux LAT et LON pour l'interface interactive
+    # Création explicite des axes géographiques pour l'interface interactive
     LAT = np.array([-90 + i * (180 / NLAT) for i in range(NLAT)])
     LON = np.array([-180 + j * (360 / NLON) for j in range(NLON)])
 
     def flux_solaire_entrant(lat_rad, lon_deg, heure_universelle, albedo=0.30):
+        """Calcule la puissance solaire reçue en fonction de l'angle zénithal (cycle jour/nuit)."""
         heure_solaire = (heure_universelle + lon_deg / 15) % 24
         cos_zenith = np.cos((heure_solaire - 12) * np.pi / 12) * np.cos(lat_rad)
         return S0 * (1 - albedo) * max(cos_zenith, 0)
@@ -69,8 +70,9 @@ if est_modele_simplifie:
                 heure_universelle = (k * DT / 3600) % 24
                 
                 phi_in = flux_solaire_entrant(lat_rad, lon_deg, heure_universelle)
-                phi_out = SIGMA * (T_act ** 4) + 20.0 # 20.0 = chaleur latente bidon
+                phi_out = SIGMA * (T_act ** 4) + 20.0 # 20.0 = chaleur latente simplifiée
                 
+                # Méthode d'Euler explicite
                 dT = (phi_in - phi_out) * DT / C_CONST
                 T_grid_all_times[k + 1, i, j] = T_act + dT
 
@@ -101,13 +103,16 @@ else:
         print(f"ERREUR CRITIQUE: Un fichier de ressources est introuvable : {e}")
         sys.exit(1)
 
-    # Définition GLOBALE de la grille Haute Résolution pour l'interactivité
+    # Définition GLOBALE de la grille Haute Résolution (140x70) pour l'interactivité
     NLAT_HI, NLON_HI = 70, 140
     LAT_HI = np.linspace(LAT_lowres.min(), LAT_lowres.max(), NLAT_HI)
     LON_HI = np.linspace(LON_lowres.min(), LON_lowres.max(), NLON_HI)
 
     def upscale_grid(data_lowres, lat_low, lon_low, lat_hi, lon_hi):
-        """Interpole une grille 2D de basse à haute résolution."""
+        """
+        Moteur d'interpolation spatiale (Bilineaire) : Prend une matrice basse résolution 
+        et l'étire mathématiquement pour remplir les "trous" de la grille haute résolution.
+        """
         interp = RegularGridInterpolator(
             (lat_low, lon_low), data_lowres, bounds_error=False, fill_value=None
         )
@@ -115,9 +120,13 @@ else:
         return interp(np.moveaxis(points_hi, 0, -1))
 
     # ────────────────────────────────────────────────
-    # FONCTIONS DE SIMULATION
+    # FONCTIONS DE SIMULATION PHYSIQUE
     # ────────────────────────────────────────────────
     def f_rhs(T, phinet, C, q_latent, p_cond):
+        """
+        Cœur thermodynamique : Bilan d'énergie global de la surface terrestre.
+        Somme des flux : Solaire net - Évaporation + Effet de Serre - Émission Infrarouge + Conduction.
+        """
         return (
             phinet
             - q_latent
@@ -127,12 +136,18 @@ else:
         ) / C
 
     def integrate_point_temperature(days, lat_rad, lon_deg, alb_sol_daily, alb_nuages_daily, C_const, q_base, T0):
+        """
+        Résolution temporelle locale : Intègre la température pour un pixel spécifique sur toute 
+        la durée de la simulation, incluant le modèle de conduction 1D du sous-sol.
+        """
         N_steps = int(days * 24 * 3600 / lib.dt)
         T = np.empty(N_steps + 1)
         T[0] = T0
         
+        # Initialisation du sol profond à l'équilibre
         T_sol = f.initialiser_profil_sol(T_moy_annuelle=T0, N=13)
 
+        # Création du cycle d'évaporation jour/nuit
         sign_daynight = np.empty(N_steps)
         for k in range(N_steps):
             t_sec = k * lib.dt
@@ -141,6 +156,7 @@ else:
             sign_daynight[k] = 1.0 if f.cos_incidence(lat_rad, jour_sim, heure_solaire) > 0 else -1.0
         q_latent_smoothed = gaussian_filter1d(q_base * sign_daynight, sigma=3.0, mode="wrap")
 
+        # Boucle de résolution pas à pas
         for k in range(N_steps):
             day_of_year, heure_solaire = f.get_time_variables(k * lib.dt, lon_deg)
             jour_sim = int(k * lib.dt // 86400) + 1
@@ -149,8 +165,10 @@ else:
                 alb_sol_daily[day_of_year], alb_nuages_daily[day_of_year]
             )
             
+            # Échange d'énergie avec le sous-sol par diffusion
             T_sol, p_cond = f.calculer_conduction_sol(T[k], T_sol, lib.dt)
 
+            # Algorithme de Newton-Raphson pour la convergence de l'équation
             X = T[k]
             for _ in range(8):
                 F = X - T[k] - lib.dt * f_rhs(X, phi_n, C_const, q_latent_smoothed[k], p_cond)
@@ -162,8 +180,15 @@ else:
         return T
 
     def run_full_hires_simulation(days, stabilize=False):
+        """
+        Superviseur global HAUTE RÉSOLUTION : Extrapole les données basse résolution, 
+        prépare les matrices globales, et lance la boucle de calcul sur les 9800 pixels (70x140).
+        """
         print(f"Grille haute résolution définie : {NLAT_HI}x{NLON_HI} points.")
         print("Pré-calcul des paramètres sur la grille haute résolution...")
+        
+        # --- PHASE DE VECTORISATION (Optimisation extrême) ---
+        # Interpolation spatiale de l'albédo et de l'humidité sur la nouvelle grille
         monthly_albedo_hi = np.array([
             upscale_grid(monthly_albedo_lowres[m], LAT_lowres, LON_lowres, LAT_HI, LON_HI)
             for m in range(12)
@@ -171,9 +196,12 @@ else:
         RZSM_GRID_hi = upscale_grid(
             RZSM_GRID_lowres, RZSM_LAT_lowres[:-1], RZSM_LON_lowres[:-1], LAT_HI, LON_HI
         )
+        
+        # Création des matrices de flux latent (évaporation) et de capacité thermique
         Q_GRID_HI = np.array([[lib.P_em_surf_evap(lat, lon, verbose=False) for lon in LON_HI] for lat in LAT_HI])
         C_GRID_HI = (f.compute_cp_from_rzsm(RZSM_GRID_hi) * 1000.0) * f.RHO_BULK * lib.EPAISSEUR_ACTIVE
 
+        # Lissage temporel Gaussien pour lisser les sauts entre chaque mois
         albedo_sol_daily_grid = f.lisser_donnees_annuelles(monthly_albedo_hi, sigma=15.0)
         monthly_cloud_albedo_hi = ceres_clim_lowres.sel(lat=LAT_HI, lon=LON_HI, method="nearest").to_numpy()
         albedo_nuages_daily_grid = f.lisser_donnees_annuelles(monthly_cloud_albedo_hi, sigma=15.0)
@@ -188,6 +216,7 @@ else:
         N_steps = int(days * 24 * 3600 / lib.dt) + 1
         T_grid = np.zeros((N_steps, NLAT_HI, NLON_HI))
 
+        # --- BOUCLE SPATIALE PRINCIPALE ---
         for i in tqdm(range(NLAT_HI), desc="Progression (latitude)"):
             for j in range(NLON_HI):
                 lat, lon = LAT_HI[i], LON_HI[j]
@@ -242,7 +271,7 @@ else:
     DT = lib.dt
 
 # ────────────────────────────────────────────────
-# 4. LE DASHBOARD INTERACTIF MATPLOTLIB (Le cœur du système)
+# 4. LE DASHBOARD INTERACTIF MATPLOTLIB
 # ────────────────────────────────────────────────
 print("Génération du Dashboard interactif HAUTE RÉSOLUTION...")
 
@@ -271,7 +300,7 @@ im = ax_map.imshow(
     cmap="inferno",
     vmin=-50,
     vmax=50,
-    interpolation='bilinear'
+    interpolation='bilinear' # Lissage visuel pour masquer les pixels
 )
 
 if USE_CARTOPY:
@@ -296,7 +325,7 @@ ax_temp.set_xlim(0, SIM_DAYS_DISPLAY)
 ax_temp.set_ylim(-50, 50)
 line_temp, = ax_temp.plot([], [], color='firebrick', linewidth=2) 
 
-# --- WIDGETS : LES SLIDERS (EN BAS DE L'ÉCRAN) ---
+# --- WIDGETS ET ÉVÉNEMENTS (IHM) ---
 plt.subplots_adjust(bottom=0.25, wspace=0.3)
 
 ax_slider_day = plt.axes([0.15, 0.1, 0.3, 0.03])
@@ -305,8 +334,8 @@ slider_day = Slider(ax_slider_day, "Jour", 0, SIM_DAYS_DISPLAY - 1, valinit=0, v
 ax_slider_hour = plt.axes([0.15, 0.05, 0.3, 0.03])
 slider_hour = Slider(ax_slider_hour, "Heure", 0, 23, valinit=0, valstep=1)
 
-# --- ÉVÉNEMENTS INTERACTIFS ---
 def _refresh_map(val):
+    """Mise à jour cartographique pilotée par les curseurs temporels."""
     day = int(slider_day.val)
     hour = int(slider_hour.val)
     steps_per_day = int(24 * 3600 / DT)
@@ -318,6 +347,7 @@ def _refresh_map(val):
     fig.canvas.draw_idle()
 
 def on_map_click(event):
+    """Extraction et tracé de la courbe locale suite à un clic sur la matrice HAUTE RÉSOLUTION."""
     try:
         if event.inaxes != ax_map:
             return
@@ -328,18 +358,17 @@ def on_map_click(event):
             
         print(f"--> CLIC DÉTECTÉ sur la carte : Lat={lat_clic:.2f}, Lon={lon_clic:.2f}")
             
-        # 1. On trouve la latitude la plus proche (AVEC LA GRILLE HAUTE RÉSOLUTION)
+        # 1. Recherche du pixel le plus proche sur la grille 70x140
         idx_lat = np.abs(LAT_HI - lat_clic).argmin()
         
-        # 2. Sécurité pour la longitude
         lon_corrige = lon_clic if LON_HI.min() < 0 else (lon_clic + 360) % 360
         idx_lon = np.abs(LON_HI - lon_corrige).argmin()
         
-        # 3. Extraction des données
+        # 2. Extraction vectorielle et conversion en Celsius
         serie_temp_k = T_grid_all_times[:, idx_lat, idx_lon]
         serie_temp_c = serie_temp_k - 273.15
         
-        # 4. Mise à jour du graphique
+        # 3. Mise à jour de la courbe
         line_temp.set_data(time_axis_days, serie_temp_c)
         
         y_min, y_max = serie_temp_c.min(), serie_temp_c.max()
@@ -357,7 +386,6 @@ def on_map_click(event):
     except Exception as e:
         print(f"!!! ERREUR LORS DU CLIC : {e} !!!")
 
-# On branche les événements
 slider_day.on_changed(_refresh_map)
 slider_hour.on_changed(_refresh_map)
 fig.canvas.mpl_connect('button_press_event', on_map_click)

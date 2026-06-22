@@ -25,48 +25,50 @@ if not FICHIER_SOURCE.exists():
     print("Veuillez d'abord faire tourner 'modele_planisphere_haute_res.py' avec l'option 2 (stabilisée).")
     exit()
 
-# 2. Chargement des données
+# 2. Chargement de la matrice source
 print("Chargement de la matrice thermique...")
 T_grid = np.load(FICHIER_SOURCE)
 N_steps, nlat_or, nlon_or = T_grid.shape
 
-# 3. Paramètres temporels (On suppose un pas de temps de 3600s, soit 24 steps/jour)
+# 3. Paramètres temporels
 STEPS_PER_DAY = 24
 N_DAYS = N_steps // STEPS_PER_DAY
 print(f"Détection de {N_DAYS} jours de simulation.")
 
-# Définition des grilles d'origine (Grille Haute Résolution 70x140)
-# Attention: Ajustez ces valeurs si votre script source utilise d'autres bornes exactes
+# Extraction des axes spatiaux d'origine (Haute Résolution)
 lat_or = np.linspace(-90, 90, nlat_or)
 lon_or = np.linspace(-180, 180, nlon_or)
 
-# 4. Création de la grille cible (Degré par degré : 181x361)
+# 4. Création de la grille cible universelle (1 degré par 1 degré)
 lat_cible = np.linspace(-90, 90, 181)
 lon_cible = np.linspace(-180, 180, 361)
+
+# Création d'un maillage (meshgrid) pour traiter tous les points d'un coup (Vectorisation)
 grille_points_cible = np.array(np.meshgrid(lat_cible, lon_cible, indexing="ij"))
 points_aplatis = np.moveaxis(grille_points_cible, 0, -1)
 
+# Aplatissement des coordonnées pour formater les futures colonnes CSV
 lat_flat = grille_points_cible[0].flatten()
 lon_flat = grille_points_cible[1].flatten()
 
 liste_dataframes_jours = []
 
-# 5. Boucle de calcul des moyennes journalières et interpolation
+# 5. Boucle de calcul et d'interpolation spatiale
 print("Calcul des moyennes et interpolation spatiale (1°x1°)...")
 for jour in tqdm(range(N_DAYS), desc="Traitement des jours"):
     start_idx = jour * STEPS_PER_DAY
     end_idx = start_idx + STEPS_PER_DAY
     
-    # Extraction des 24 heures du jour et calcul de la moyenne (axe 0)
+    # Étape A : Compression temporelle. On fait la moyenne des 24h sur l'axe 0.
     bloc_jour = T_grid[start_idx:end_idx, :, :]
     moyenne_jour_grille_origine = np.mean(bloc_jour, axis=0)
     
-    # Interpolation mathématique sur la nouvelle grille 1°x1°
+    # Étape B : Étirement spatial. On adapte la grille d'origine sur le format 181x361.
     interp_fonction = RegularGridInterpolator((lat_or, lon_or), moyenne_jour_grille_origine, bounds_error=False, fill_value=None)
     grille_1deg = interp_fonction(points_aplatis)
     t_flat = grille_1deg.flatten()
     
-    # Création ultra-rapide du tableau pour ce jour
+    # Étape C : Création structurelle (DataFrame). On associe chaque pixel à son Jour, sa Lat, sa Lon et sa Température.
     df_jour = pd.DataFrame({
         'Jour': jour + 1,
         'Latitude': lat_flat.round(1),
