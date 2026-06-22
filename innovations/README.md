@@ -17,7 +17,7 @@ Ce dossier central est consacré à l'étude quantitative de l'épaisseur optiqu
 ### 3. **[Modélisation de la Couche Atmosphérique](https://github.com/rayansadoun31-source/groupeC/tree/d95f3efdee9b6d7b6ad0ca072b5128c78a0585f8/innovations/couche_atmospherique)**
 Ce dossier se concentre sur l'équilibre radiatif global de la Terre. À partir des données de température et d'émissivité, il simule l'impact des gaz à effet de serre sur la température de surface en testant différentes configurations de découpage de l'atmosphère (modèles à 1 couche, 2 couches, puis généralisation à un nombre $N$ de couches).
 
-### 4. [Modélisation de l'Albédo Atmosphérique](./albédo_atmosphérique/)
+### 4. **[Modélisation de l'Albédo Atmosphérique](https://github.com/rayansadoun31-source/groupeC/tree/cd2befafb5a1e72b343e9685873f1c2dd265ed08/innovations/albedo_atm)**
 Ce dossier traite de la réflexion du rayonnement solaire par l'atmosphère. À partir de données météorologiques réelles (réanalyses ERA5 via l'API Copernicus), il permet de calculer vectoriellement l'épaisseur optique des nuages (via l'approximation d'Eddington) et de cartographier dynamiquement l'albédo nuageux à l'échelle mondiale.
 
 ---
