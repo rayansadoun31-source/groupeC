@@ -1,0 +1,123 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern,geometry,microtype}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage[version=4]{mhchem}
+\usepackage{xcolor,listings,hyperref}
+\geometry{margin=2.4cm}
+\sisetup{locale=FR,per-mode=symbol}
+\DeclareSIUnit\molecule{molécule}
+\DeclareSIUnit\atm{atm}
+\lstset{language=Python,basicstyle=\ttfamily\small,backgroundcolor=\color{black!4},frame=single,breaklines=true,showstringspaces=false}
+\hypersetup{colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!55!black}
+
+\title{Documentation de \texttt{1\_section\_efficace\_CO2\_15um.py}}
+\author{Projet climat 2026}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\section{Rôle du programme}
+
+Ce script est un prototype autonome consacré à la bande d'absorption du
+\ce{CO2} autour de \SI{15}{\micro\metre}. Il télécharge les raies HITRAN,
+calcule une section efficace avec un profil de Voigt, la convertit en unités
+SI, puis l'affiche entre 12 et \SI{18}{\micro\metre}.
+
+\section{Installation préalable}
+
+Python~3.12 et les trois paquets de \path{requirements.txt} sont requis :
+
+\begin{lstlisting}[language=bash]
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+\end{lstlisting}
+
+Les paquets externes sont \texttt{numpy}, \texttt{matplotlib} et
+\texttt{hitran-api}. Attention : \texttt{hitran-api} s'importe sous le nom
+\texttt{hapi}. \texttt{pathlib} appartient à la bibliothèque standard.
+Le premier lancement exige une connexion au serveur HITRAN si la table locale
+\texttt{CO2} n'est pas encore disponible.
+
+\section{Imports du fichier}
+
+\begin{lstlisting}
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+from hapi import absorptionCoefficient_Voigt, db_begin, fetch
+\end{lstlisting}
+
+\begin{itemize}
+  \item \texttt{Path} construit le chemin absolu du cache ;
+  \item \texttt{numpy} crée les grilles et effectue l'interpolation ;
+  \item \texttt{matplotlib.pyplot} produit le graphique ;
+  \item \texttt{db\_begin}, \texttt{fetch} et
+        \texttt{absorptionCoefficient\_Voigt} assurent l'accès à HITRAN et
+        le calcul spectral.
+\end{itemize}
+
+\section{Constante globale}
+
+\texttt{DOSSIER\_DONNEES} désigne \path{donnees_hitran/}, situé à côté du
+script. HAPI y lit ou y crée \path{CO2.data} et \path{CO2.header}.
+
+\section{Fonctions}
+
+\subsection{\texttt{convertir\_lambda\_m\_en\_nombre\_onde\_cm\_1}}
+
+\textbf{Entrée :} longueur d'onde scalaire ou tableau, en mètres.
+
+\textbf{Retour :} nombre d'onde en \si{\per\centi\metre}, selon
+\begin{equation}
+  \widetilde\nu=\frac{1}{100\lambda}.
+\end{equation}
+
+\subsection{\texttt{charger\_section\_co2}}
+
+Paramètres par défaut : 550--\SI{800}{\per\centi\metre}, pas de
+\SI{0.05}{\per\centi\metre}, $T=\SI{296}{\kelvin}$ et
+$p=\SI{1}{\atm}$. La fonction initialise la base, télécharge
+l'isotopologue principal du \ce{CO2}, puis appelle le profil de Voigt.
+
+\textbf{Retour :} \texttt{(nombres\_onde, sections\_m2)}, deux tableaux NumPy.
+HAPI fournit initialement des \si{\centi\metre\squared\per\molecule}; le
+facteur $10^{-4}$ donne des \si{\metre\squared\per\molecule}.
+
+\subsection{\texttt{calculer\_section\_co2}}
+
+La fonction convertit les longueurs d'onde demandées puis interpole la
+section avec \texttt{numpy.interp}. Les valeurs hors de la plage HITRAN sont
+fixées à zéro. Elle renvoie une section scalaire ou un tableau selon l'entrée.
+
+\subsection{\texttt{tracer\_section\_co2}}
+
+Cette fonction construit 3000 points de 12 à \SI{18}{\micro\metre}, calcule
+les sections, puis ouvre un graphique. Elle constitue le point d'entrée lors
+de l'exécution directe du fichier.
+
+\section{Exécution et sortie}
+
+\begin{lstlisting}[language=bash]
+python 1_section_efficace_CO2_15um.py
+\end{lstlisting}
+
+La sortie est une fenêtre graphique ; aucun fichier n'est exporté. Le dossier
+\path{donnees_hitran/} peut en revanche être créé ou complété. En environnement
+sans affichage, il faut configurer un backend Matplotlib non interactif ou
+remplacer \texttt{plt.show()} par une sauvegarde de figure.
+
+\section{Place dans le modèle}
+
+Ce prototype sert à valider l'installation de HAPI et les unités sur un seul
+gaz. Le calcul multi-gaz utilisé par le modèle final se trouve dans
+\path{2_sections_efficaces_gaz_hitran.py}.
+
+\end{document}

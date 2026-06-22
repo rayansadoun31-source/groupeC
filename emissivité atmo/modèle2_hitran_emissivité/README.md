@@ -9,6 +9,14 @@ Ce dossier regroupe les scripts d'acquisition, de calcul et d'intégration basé
 ### Documentation Technique et Références
 * **[`documentation_modele_hitran.tex`](documentation_modele_hitran.tex)** | *Contenu :* Code source LaTeX du rapport technique complet décrivant le fonctionnement mathématique et physique du modèle spectral d'émissivité.
 
+Une documentation LaTeX autonome est également fournie pour chaque code :
+
+* [`documentation_1_section_efficace_CO2_15um.tex`](documentation_1_section_efficace_CO2_15um.tex)
+* [`documentation_2_sections_efficaces_gaz_hitran.tex`](documentation_2_sections_efficaces_gaz_hitran.tex)
+* [`documentation_code_final_emissivite_avec_sections_hitran.tex`](documentation_code_final_emissivite_avec_sections_hitran.tex)
+* [`documentation_generer_table_emissivite_hitran.tex`](documentation_generer_table_emissivite_hitran.tex)
+* [`documentation_code_H20_CH4_CO2_O3.tex`](documentation_code_H20_CH4_CO2_O3.tex), pour le profil atmosphérique externe indispensable.
+
 * **[`references_hitran.bib`](references_hitran.bib)** | *Contenu :* Fichier de bibliographie BibTeX contenant les références d'articles scientifiques officiels pour la base de données HITRAN et l'interface Python HAPI.
 
 ### Scripts d'Acquisition et Calcul Spectral
@@ -30,3 +38,13 @@ Ce dossier regroupe les scripts d'acquisition, de calcul et d'intégration basé
 
 ## Remarques sur l'Exécution
 Les scripts tirent parti de l'interface HAPI (HITRAN Application Programming Interface). Le dossier `donnees_hitran` sert de mémoire tampon locale pour éviter de retélécharger les millions de raies de paramètres quantiques des gaz (CH4, CO2, O3 et H2O) à chaque exécution.
+
+Installation préalable des imports externes :
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
+
+Le paquet `hitran-api` s'importe dans les scripts sous le nom `hapi`. Le modèle dépend aussi du fichier `../../temperatures_et_concentrations/code_H20_CH4_CO2_O3.py`. La liste exhaustive des imports, la documentation des fonctions et les commandes d'exécution figurent dans les cinq documentations LaTeX autonomes listées ci-dessus.
