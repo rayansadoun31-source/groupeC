@@ -6,7 +6,7 @@ Ce dossier central constitue le cœur de l'étude thermique au sol. Il regroupe 
 
 ## Structure du Dossier
 
-### 1. [Modèle 4 : Simulation Thermique Globale et Cartographie Interactive](./modele_4/)
+### 1. **[Modèle 4 : Simulation Thermique Globale et Cartographie Interactive][(./modele_4/)](https://github.com/rayansadoun31-source/groupeC/tree/3dc7ad71f52589174c525a2a874538ba60eedc20/modele_Tsol_principal/modele4/codes%20python)**
 Ce sous-dossier abrite le volet algorithmique et numérique le plus avancé pour la simulation des températures au sol.
 * **Résumé du contenu :** Il rassemble les moteurs de calcul physique (flux d'énergie, rayonnement solaire, conduction, évaporation) couplés à des bases de données géographiques et météorologiques réelles. Ce modèle permet de générer des projections thermiques temporelles (évolutions heure par heure) ainsi que des visualisations cartographiques globales interactives sous forme de planisphères, en basse ou haute résolution.
 
