@@ -13,7 +13,7 @@ calculer_sections_gaz = module_sections_hitran.calculer_sections_gaz
 # Chargement du profil vertical des concentrations atmosphériques.
 chemin = (
     Path(__file__).resolve().parent.parent.parent
-    / "températures_et_concentrations"
+    / "temperatures_et_concentrations"
     / "code_H20_CH4_CO2_O3.py"
 )
 
